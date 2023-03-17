@@ -1,0 +1,59 @@
+plugins {
+    id 'org.springframework.boot' version '3.0.4'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'java'
+}
+
+group 'com.metechvn'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+repositories {
+    mavenCentral()
+}
+ext {
+    set('springCloudVersion', "2022.0.1")
+}
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // excel
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
+    // map advanced sql types
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.2.0'
+
+    //Cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache:2.7.1'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.7.1'
+    //Swagger
+    implementation 'org.springdoc:springdoc-openapi-ui:1.6.14'
+    //jaeger
+//    implementation 'io.opentracing.contrib:opentracing-spring-jaeger-cloud-starter:3.3.1'
+    //redis
+    implementation 'redis.clients:jedis:3.9.0'
+
+    // feign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.hibernate:hibernate-validator:8.0.0.Final'
+    runtimeOnly 'org.postgresql:postgresql'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.2'
+    implementation group: 'org.json', name: 'json', version: '20220320'
+}
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+test {
+    useJUnitPlatform()
+}
