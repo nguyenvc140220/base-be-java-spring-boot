@@ -3,6 +3,7 @@ package com.metechvn.config;
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer;
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaSerializer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +38,11 @@ public class KafkaConfig {
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
-        return new DefaultKafkaProducerFactory<>(producerProperties);
+        final var properties = this.producerProperties;
+        properties.put(KEY_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
+        properties.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class.getName());
+
+        return new DefaultKafkaProducerFactory<>(properties);
     }
 
     @Bean
@@ -83,6 +88,29 @@ public class KafkaConfig {
             ConsumerFactory<Object, Object> objConsumerFactory) {
         var factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(objConsumerFactory);
+
+        return factory;
+    }
+
+    @Bean(name = "strKeyObjConsumerFactory")
+    public ConsumerFactory<String, Object> strKeyObjConsumerFactory() {
+        final var properties = this.consumerProperties;
+        properties.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
+
+        if (StringUtils.isNotEmpty(schemaRegistryUrl)) {
+            properties.put(KEY_SERIALIZER_CLASS_CONFIG, KafkaJsonSchemaDeserializer.class.getName());
+            properties.put(VALUE_SERIALIZER_CLASS_CONFIG, KafkaJsonSchemaDeserializer.class.getName());
+        }
+
+        return new DefaultKafkaConsumerFactory<>(properties);
+    }
+
+    @Bean(name = "objListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, Object> strKeyObjContainerFactory(
+            ConsumerFactory<String, Object> strKeyObjConsumerFactory) {
+        var factory = new ConcurrentKafkaListenerContainerFactory<String, Object>();
+        factory.setConsumerFactory(strKeyObjConsumerFactory);
 
         return factory;
     }
