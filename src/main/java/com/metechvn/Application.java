@@ -1,5 +1,6 @@
 package com.metechvn;
 
+import luongdev.cqrs.EnableCqrsBus;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -7,9 +8,10 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
-@SpringBootApplication
 @EnableCaching
 @EnableJpaRepositories
+@EnableCqrsBus
+@SpringBootApplication(scanBasePackages = {"luongdev.*", "com.metechvn.*"})
 public class Application implements CommandLineRunner {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -29,5 +31,7 @@ public class Application implements CommandLineRunner {
 //        p.addProperties(p1, p2, p3);
 //
 //        dynamicEntityTypeRepository.save(p);
+
+
     }
 }
