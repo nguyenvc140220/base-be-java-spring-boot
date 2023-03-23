@@ -19,4 +19,4 @@ COPY --from=build $HOME/build/libs/*.jar $HOME/app.jar
 # Run app from jar file
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
-EXPOSE 8080
+EXPOSE 8089
