@@ -29,6 +29,14 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
         return buildResponseEntity(apiError);
     }
 
+    @ExceptionHandler(value = {BusinessException.class})
+    protected ResponseEntity<Object> handleBusinessError(BusinessException ex) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
+        apiError.setMsg(ex.getMessage());
+
+        return buildResponseEntity(apiError);
+    }
+
     private ResponseEntity<Object> buildResponseEntity(ApiError apiError) {
         return new ResponseEntity<>(apiError, apiError.getStatus());
     }

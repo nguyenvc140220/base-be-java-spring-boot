@@ -19,4 +19,6 @@ public interface DynamicEntityTypeRepository extends JpaRepository<DynamicEntity
             " left join fetch detp.property dp " +
             " where det.code = ?1")
     DynamicEntityType findIncludeRelationsByCode(String code);
+
+    DynamicEntityType findByCode(String code);
 }
