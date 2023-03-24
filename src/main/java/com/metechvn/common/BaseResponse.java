@@ -34,10 +34,12 @@ public class BaseResponse<T> implements Serializable {
         ResponseStatus status = ResponseStatus.SUCCESS;
         return new BaseResponse<>(null, status.getHttpStatus(), status.getStatusCode(), getMessageInternationalization(status, ms, locale));
     }
+
     public static <T> BaseResponse<T> onOk(T data) {
         ResponseStatus success = ResponseStatus.SUCCESS;
         return new BaseResponse<>(data, success.getHttpStatus(), success.getStatusCode(), success.getMessage());
     }
+
     @NotNull
     private static String getMessageInternationalization(ResponseStatus status, ResourceBundleMessageSource ms, Locale locale) {
         return ms.getMessage(status.getMessage(), null, locale);
@@ -53,10 +55,16 @@ public class BaseResponse<T> implements Serializable {
         return new BaseResponse<>(null, status.getHttpStatus(), status.getStatusCode(), getMessageInternationalization(status, ms, locale));
     }
 
+    public static <T> BaseResponse<T> onCreated(T data) {
+        ResponseStatus status = ResponseStatus.CREATED;
+        return new BaseResponse<>(data, status.getHttpStatus(), status.getStatusCode(), "Created");
+    }
+
     public static <T> BaseResponse<T> onCreated(T data, ResourceBundleMessageSource ms, Locale locale) {
         ResponseStatus status = ResponseStatus.CREATED;
         return new BaseResponse<>(data, status.getHttpStatus(), status.getStatusCode(), getMessageInternationalization(status, ms, locale));
     }
+
 
     public static <T> BaseResponse<T> onError(ResponseStatus status, ResourceBundleMessageSource ms, Locale locale) {
         return new BaseResponse<>(null, status.getHttpStatus(), status.getStatusCode(), getMessageInternationalization(status, ms, locale));
