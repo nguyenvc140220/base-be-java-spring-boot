@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 public enum ResponseStatus {
     SUCCESS(HttpStatus.OK, 200, "message.success"),
     NOT_COMPANY_LEFT(HttpStatus.OK, 200, "message.not_company_left"),
-    CREATED(HttpStatus.CREATED, 2001, "message.created"),
+    CREATED(HttpStatus.CREATED, 201, "message.created"),
     BAD_REQUEST(HttpStatus.BAD_REQUEST, 400, "message.bad_request"),
 
     BAD_CLIENT_REQUEST(HttpStatus.BAD_REQUEST, 400, "message.bad_request"),
@@ -26,11 +26,13 @@ public enum ResponseStatus {
     private HttpStatus httpStatus;
     private int statusCode;
     private String message;
+
     ResponseStatus(HttpStatus httpStatus, int statusCode, String message) {
         this.httpStatus = httpStatus;
         this.statusCode = statusCode;
         this.message = message;
     }
+
     public HttpStatus getHttpStatus() {
         return httpStatus;
     }
