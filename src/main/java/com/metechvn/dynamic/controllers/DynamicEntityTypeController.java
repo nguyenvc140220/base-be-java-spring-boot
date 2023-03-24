@@ -34,7 +34,7 @@ public class DynamicEntityTypeController {
         );
     }
 
-    @PostMapping({ "/add-property"})
+    @PostMapping({"/add-property"})
     public BaseResponse<Boolean> addProperty(@Valid @RequestBody EntityTypeAddPropertyCommand cmd) {
         System.out.println(bus.execute(cmd));
 
