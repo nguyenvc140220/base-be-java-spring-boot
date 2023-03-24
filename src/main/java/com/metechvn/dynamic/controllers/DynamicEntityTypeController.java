@@ -2,6 +2,7 @@ package com.metechvn.dynamic.controllers;
 
 import com.metechvn.common.BaseResponse;
 import com.metechvn.dynamic.commands.CreateEntityTypeCommand;
+import com.metechvn.dynamic.commands.EntityTypeAddPropertyCommand;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.Bus;
@@ -19,6 +20,13 @@ public class DynamicEntityTypeController {
 
     @PostMapping({"", "/", "/create"})
     public BaseResponse<Boolean> createEntityType(@Valid @RequestBody CreateEntityTypeCommand cmd) {
+        System.out.println(bus.execute(cmd));
+
+        return BaseResponse.onOk(true);
+    }
+
+    @PostMapping({ "/add-property"})
+    public BaseResponse<Boolean> addProperty(@Valid @RequestBody EntityTypeAddPropertyCommand cmd) {
         System.out.println(bus.execute(cmd));
 
         return BaseResponse.onOk(true);
