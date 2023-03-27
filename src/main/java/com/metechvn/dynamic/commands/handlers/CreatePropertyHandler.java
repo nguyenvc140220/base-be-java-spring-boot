@@ -1,5 +1,6 @@
 package com.metechvn.dynamic.commands.handlers;
 
+import com.metechvn.common.CurrentTenantProvider;
 import com.metechvn.dynamic.commands.CreatePropertyCommand;
 import com.metechvn.dynamic.entities.DynamicProperty;
 import com.metechvn.dynamic.repositories.DynamicPropertyRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CreatePropertyHandler implements RequestHandler<DynamicProperty, CreatePropertyCommand> {
 
+    private final CurrentTenantProvider currentTenantProvider;
     private final DynamicPropertyRepository dynamicPropertyRepository;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -31,7 +33,7 @@ public class CreatePropertyHandler implements RequestHandler<DynamicProperty, Cr
                 .dataType(cmd.getDataType())
                 .inputType(cmd.getInputType())
                 .build();
-
+        dynamicEntityType.setTenant(currentTenantProvider.getTenant());
         return dynamicPropertyRepository.save(dynamicEntityType);
     }
 }

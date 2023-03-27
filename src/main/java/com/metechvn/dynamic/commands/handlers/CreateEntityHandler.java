@@ -1,5 +1,6 @@
 package com.metechvn.dynamic.commands.handlers;
 
+import com.metechvn.common.CurrentTenantProvider;
 import com.metechvn.dynamic.commands.CreateEntityCommand;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CreateEntityHandler implements RequestHandler<DynamicEntity, CreateEntityCommand> {
-
+    private final CurrentTenantProvider currentTenantProvider;
     private final DynamicEntityRepository dynamicEntityRepository;
     private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
 
@@ -25,6 +26,7 @@ public class CreateEntityHandler implements RequestHandler<DynamicEntity, Create
 
         var entity = new DynamicEntity();
         entity.setEntityType(typeIncludeProps);
+        entity.setTenant(currentTenantProvider.getTenant());
 
         for (var entry : cmd.getProperties().entrySet()) {
             if (!typeIncludeProps.exists(entry.getKey())) continue;
