@@ -1,13 +1,18 @@
 package com.metechvn.contacts.controllers;
 
 import com.metechvn.common.BaseResponse;
+import com.metechvn.contacts.commands.AddHeaderMappingCommand;
 import com.metechvn.contacts.commands.SaveContactsFileCommand;
+import com.metechvn.dynamic.commands.EntityTypeAddPropertyCommand;
 import com.metechvn.exception.BusinessException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.Bus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
+import java.nio.file.Paths;
 
 
 @RestController
@@ -15,20 +20,30 @@ import java.io.*;
 @RequestMapping("/api/v1.0/contacts")
 public class ImportContactsController {
     private final Bus bus;
+    @Value("${file.upload}")
+    private String filePath;
+
+
     @PostMapping({"/import"})
     @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"})
     public BaseResponse<Boolean> ImportContacts(@RequestParam("file") MultipartFile file) {
         try {
             String fileName= file.getOriginalFilename();
-            String fileLocation = new File("uploads\\import\\contacts").getAbsolutePath() + "\\" + fileName;
+            String fileLocation = Paths.get(filePath,"uploads", "import", "contacts",fileName).toString();
             file.transferTo(new File(fileLocation));
             SaveContactsFileCommand cmd = new SaveContactsFileCommand();
-            cmd.filePath = fileLocation;
-            cmd.fileName = fileName;
+            cmd.setFilePath(Paths.get("uploads", "import", "contacts",fileName).toString());
+            cmd.setFileName(fileName);
             System.out.println(bus.execute(cmd));
         } catch (Exception e){
             throw new BusinessException(String.format("Upload %s không thành công!",e));
         }
+        return BaseResponse.onOk(true);
+    }
+
+    @PostMapping({"/add-header-mapping"})
+    public BaseResponse<Boolean> AddHeaderMapping(@Valid @RequestBody AddHeaderMappingCommand cmd) {
+        System.out.println(bus.execute(cmd));
         return BaseResponse.onOk(true);
     }
 }
