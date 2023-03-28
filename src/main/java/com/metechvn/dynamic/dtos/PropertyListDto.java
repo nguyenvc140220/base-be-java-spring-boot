@@ -2,6 +2,7 @@ package com.metechvn.dynamic.dtos;
 
 import com.metechvn.common.FullAuditDto;
 import com.metechvn.common.persistent.FullAuditedEntity;
+import com.metechvn.dynamic.DataType;
 import com.metechvn.dynamic.entities.DynamicProperty;
 import lombok.*;
 
@@ -42,9 +43,16 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
 
         this.code = p.getCode();
         this.displayName = p.getDisplayName();
+        this.dataType = p.getDataType();
+        this.editable = p.getEditable();
+        this.removeable = p.getRemovable();
     }
 
     private String code;
     private String displayName;
+
+    private DataType dataType;
+    private boolean editable;
+    private boolean removeable;
 
 }
