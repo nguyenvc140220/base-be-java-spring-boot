@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "contacts_file", schema = "company")
 public class ContactsFileEntity extends UUIDFullAuditedEntityImpl {
@@ -37,6 +39,10 @@ public class ContactsFileEntity extends UUIDFullAuditedEntityImpl {
     )
     private String tenant;
 
+
+    public ContactsFileEntity() {
+
+    }
 
     public static ContactsFileEntity.ContactsFileEntityBuilder builder() {
         return new ContactsFileEntity.ContactsFileEntityBuilder();
@@ -90,11 +96,6 @@ public class ContactsFileEntity extends UUIDFullAuditedEntityImpl {
         this.tenant = tenant;
     }
 
-
-
-    public ContactsFileEntity() {
-    }
-
     public ContactsFileEntity(final String fileName, final String importStatus, final Long totalRecords, final Long totalRecordsSuccess, final String headerMapping,final String filePath,final String tenant) {
         this.fileName = fileName;
         this.importStatus = importStatus;
@@ -106,6 +107,7 @@ public class ContactsFileEntity extends UUIDFullAuditedEntityImpl {
     }
 
     public static class ContactsFileEntityBuilder {
+        private UUID id;
         private String fileName;
         private String importStatus;
         private Long totalRecords;
