@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 
 
 @RestController
@@ -25,10 +26,13 @@ public class ImportContactsController {
 
 
     @PostMapping({"/import"})
-    @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"})
+    @CrossOrigin(origins = "http://localhost:4200")
+    @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"},value = "/import")
     public BaseResponse<Boolean> ImportContacts(@RequestParam("file") MultipartFile file) {
         try {
-            String fileName= file.getOriginalFilename();
+            String fileName= file.getOriginalFilename().replaceAll("\\s+","_");
+            fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD);
+            fileName = fileName.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
             String fileLocation = Paths.get(filePath,"uploads", "import", "contacts",fileName).toString();
             file.transferTo(new File(fileLocation));
             SaveContactsFileCommand cmd = new SaveContactsFileCommand();

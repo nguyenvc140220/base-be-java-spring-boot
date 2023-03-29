@@ -1,8 +1,13 @@
 package com.metechvn.contacts.commands;
 
 import com.metechvn.contacts.entities.ContactsFileEntity;
+import com.metechvn.dynamic.commands.CreateEntityCommand;
 import lombok.*;
 import luongdev.cqrs.Request;
+import org.springframework.util.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
