@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metechvn.config.KafkaSession;
 import com.metechvn.dynamic.entities.DynamicEntity;
+import com.metechvn.dynamic.entities.ImportStatus;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
+import com.metechvn.dynamic.repositories.ImportStatusRepository;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class ImportBatchConsumer {
 
     private final ObjectMapper objectMapper;
+    private final ImportStatusRepository importStatusRepository;
     private final DynamicEntityTypeRepository entityTypeRepository;
     private final EntityManagerFactory emf;
 
@@ -37,6 +40,10 @@ public class ImportBatchConsumer {
         var batchData = cr.value();
 
         var tenant = (String) batchData.get("tenant");
+        var jobId = (String) batchData.get("jobId");
+        var fileName = (String) batchData.get("fileName");
+        var totalRows = (int) batchData.get("totalRows");
+
         var entityType = entityTypeRepository.findIncludeRelationsByCode((String) batchData.get("entityType"));
         if (entityType == null) {
             return;
@@ -60,6 +67,8 @@ public class ImportBatchConsumer {
                 entity.setEntityType(entityType);
                 entity.setTenant(tenant);
 
+                // TODO: Validate entities here
+
                 for (var entry : row.entrySet()) {
                     var property = entityType.getProperty(entry.getKey());
                     if (property == null) continue;
@@ -71,7 +80,24 @@ public class ImportBatchConsumer {
             }
 
             transaction.commit();
+
+            tryToUpdateImportStatus(fileName, jobId, totalRows, batches.size(), 0);
         }
 
+    }
+
+    private void tryToUpdateImportStatus(String fileName, String jobId, int totalRows, int successRow, int errorRows) {
+        var importStatus = importStatusRepository.findByJobId(jobId);
+        if (importStatus == null) {
+            importStatus = ImportStatus.builder()
+                    .jobId(jobId)
+                    .totalRows(totalRows)
+                    .build();
+        }
+
+        importStatus.setErrorRows(importStatus.getErrorRows() + errorRows);
+        importStatus.setSuccessRows(importStatus.getSuccessRows() + successRow);
+
+        importStatusRepository.save(importStatus);
     }
 }

@@ -40,6 +40,10 @@ dependencies {
     //redis
     implementation 'redis.clients:jedis:3.9.0'
 
+    //
+    implementation 'org.flywaydb:flyway-core:9.16.1'
+
+
     // feign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
