@@ -12,7 +12,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -30,13 +29,12 @@ public class ImportBatchConsumer {
             topics = "MKT.JOB.ImportExcelBatch",
             groupId = "${spring.kafka.client-id}",
             containerFactory = "objListenerContainerFactory")
-    public void onBatch(ConsumerRecord<String, String> cr) throws Exception {
-        if (!StringUtils.hasText(cr.value())) {
+    public void onBatch(ConsumerRecord<Object, Map<String, Object>> cr) throws Exception {
+        if (cr.value() == null) {
             return;
         }
 
-        var batchData = objectMapper.readValue(cr.value(), new TypeReference<Map<String, Object>>() {
-        });
+        var batchData = cr.value();
 
         var tenant = (String) batchData.get("tenant");
         var entityType = entityTypeRepository.findIncludeRelationsByCode((String) batchData.get("entityType"));
