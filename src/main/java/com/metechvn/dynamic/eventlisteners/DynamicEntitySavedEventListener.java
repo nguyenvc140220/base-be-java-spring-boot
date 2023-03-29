@@ -2,12 +2,11 @@ package com.metechvn.dynamic.eventlisteners;
 
 import com.metechvn.dynamic.dtos.DynamicEntityPropertyDto;
 import com.metechvn.dynamic.dtos.DynamicEntityTypeDto;
-import com.metechvn.dynamic.dtos.DynamicPropertyDto;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.etos.DynamicEntitySavedEto;
 import com.metechvn.dynamic.events.DynamicEntitySavedEvent;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
-import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -22,23 +21,17 @@ import java.util.stream.Collectors;
 public class DynamicEntitySavedEventListener
         extends TransactionalApplicationListenerAdapter<DynamicEntitySavedEvent> {
 
-    public DynamicEntitySavedEventListener(
-            KafkaTemplate<String, Object> kafkaTemplate, DynamicEntityTypeRepository dynamicEntityTypeRepository, DynamicEntityRepository dynamicEntityRepository) {
-        super(new DynamicEntitySavedEventHandler(kafkaTemplate, dynamicEntityTypeRepository, dynamicEntityRepository));
+    public DynamicEntitySavedEventListener(DynamicEntitySavedEventHandler eventHandler) {
+        super(eventHandler);
     }
 
+    @Component
+    @RequiredArgsConstructor
     static class DynamicEntitySavedEventHandler implements ApplicationListener<DynamicEntitySavedEvent> {
 
         private final Logger log = LoggerFactory.getLogger(this.getClass());
         private final KafkaTemplate<String, Object> kafkaTemplate;
-        private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
         private final DynamicEntityRepository dynamicEntityRepository;
-
-        DynamicEntitySavedEventHandler(KafkaTemplate<String, Object> kafkaTemplate, DynamicEntityTypeRepository dynamicEntityTypeRepository, DynamicEntityRepository dynamicEntityRepository) {
-            this.kafkaTemplate = kafkaTemplate;
-            this.dynamicEntityTypeRepository = dynamicEntityTypeRepository;
-            this.dynamicEntityRepository = dynamicEntityRepository;
-        }
 
         @Override
         public void onApplicationEvent(DynamicEntitySavedEvent event) {
