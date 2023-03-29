@@ -1,9 +1,7 @@
 package com.metechvn.dynamic.eventlisteners;
 
-import com.metechvn.dynamic.dtos.DynamicEntityPropertyDto;
-import com.metechvn.dynamic.dtos.DynamicEntityTypeDto;
+import com.metechvn.dynamic.dtos.FlattenDynamicEntity;
 import com.metechvn.dynamic.entities.DynamicEntity;
-import com.metechvn.dynamic.etos.DynamicEntitySavedEto;
 import com.metechvn.dynamic.events.DynamicEntitySavedEvent;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,9 +11,13 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalApplicationListenerAdapter;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Component
 public class DynamicEntitySavedEventListener
@@ -35,52 +37,51 @@ public class DynamicEntitySavedEventListener
 
         @Override
         public void onApplicationEvent(DynamicEntitySavedEvent event) {
-            if (!(event.getSource() != null && event.getSource() instanceof DynamicEntity de)) return;
+            if (event.getSource() == null) {
+                return;
+            }
 
-            var dynamicEntity = dynamicEntityRepository.findIncludeRelationsById(de.getId());
-            if (dynamicEntity == null) return;
-            var dynamicEntityType = dynamicEntity.getEntityType();
-            var dynamicEntityTypeDto = DynamicEntityTypeDto
-                    .builder()
-                    .code(dynamicEntityType.getCode())
-                    .description(dynamicEntityType.getDescription())
-                    .displayName(dynamicEntityType.getDisplayName())
-                    .build();
-            dynamicEntityTypeDto.setId(dynamicEntityType.getId());
-            dynamicEntityTypeDto.setTenant(dynamicEntityType.getTenant());
+            var entities = new ArrayList<DynamicEntity>();
 
-            var properties = dynamicEntity.getProperties()
-                    .values()
-                    .stream()
-                    .map(p -> {
-                        var property = DynamicEntityPropertyDto
-                                .builder()
-                                .propertyCode(p.getEntityProperty().getCode())
-                                .entityPropertyValue(p.getEntityPropertyValue().getValue())
-                                .build();
-                        property.setId(p.getId());
-                        property.setTenant(p.getTenant());
+            if (event.getSource() instanceof DynamicEntity de) entities.add(de);
+            else if (event.getSource() instanceof List<?> deLst) {
+                entities.addAll(
+                        deLst.stream().filter(d -> d instanceof DynamicEntity).map(x -> (DynamicEntity) x).toList()
+                );
+            }
 
-                        return property;
-                    })
-                    .collect(Collectors.toMap(DynamicEntityPropertyDto::getPropertyCode, p -> p));
+            var entityIds = entities.stream().map(DynamicEntity::getId).toArray(UUID[]::new);
+            var dynamicEntities = dynamicEntityRepository.findIncludeRelationsById(entityIds);
+            if (dynamicEntities == null || dynamicEntities.isEmpty()) {
+                return;
+            }
 
+            var tenantEntities = new HashMap<String, List<FlattenDynamicEntity<UUID>>>();
+            for (var entity : dynamicEntities) {
+                if (!StringUtils.hasText(entity.getTenant())) continue;
 
-            var entityEto = DynamicEntitySavedEto
-                    .builder()
-                    .entityType(dynamicEntityTypeDto)
-                    .properties(properties)
-                    .build();
-            entityEto.setId(dynamicEntity.getId());
-            entityEto.setTenant(dynamicEntity.getTenant());
-            try {
-                kafkaTemplate
-                        .send("MKT.BE.DynamicEntitySaved", de.getId().toString(), entityEto)
-                        .get();
+                if (!tenantEntities.containsKey(entity.getTenant())) {
+                    tenantEntities.put(entity.getTenant(), new ArrayList<>());
+                }
 
-                log.debug("Sent entity {} created to kafka", de.getId());
-            } catch (InterruptedException | ExecutionException e) {
-                log.error("Cannot send message to kafka. Trace {}", e.getMessage());
+                var flattenEntity = new FlattenDynamicEntity<>(entity.getId());
+                for (var prop : entity.getProperties().values()) {
+                    flattenEntity.put(prop.getCode(), prop.getEntityPropertyValue().getValue());
+                }
+
+                tenantEntities.get(entity.getTenant()).add(flattenEntity);
+            }
+
+            for (var entry : tenantEntities.entrySet()) {
+                try {
+                    kafkaTemplate
+                            .send("MKT.BE.DynamicEntitySaved", entry.getKey(), entry.getValue())
+                            .get();
+
+                    log.debug("Sent {} entity(s) of tenant {} to kafka", entry.getValue().size(), entry.getKey());
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error("Cannot send message to kafka. Trace {}", e.getMessage());
+                }
             }
         }
     }
