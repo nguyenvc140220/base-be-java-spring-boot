@@ -23,6 +23,7 @@ public class BatchDynamicEntityDto<T extends Serializable> implements Serializab
     @SafeVarargs
     public BatchDynamicEntityDto(String tenant, String entityType, FlattenDynamicEntityDto<T>... entities) {
         this.tenant = tenant;
+        this.entityType = entityType;
         add(entities);
     }
 
