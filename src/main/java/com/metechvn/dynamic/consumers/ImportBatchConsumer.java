@@ -2,41 +2,37 @@ package com.metechvn.dynamic.consumers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.metechvn.resource.repositories.ImportFileRepository;
 import com.metechvn.dynamic.entities.DynamicEntity;
-import com.metechvn.resource.entities.ImportStatus;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
-import com.metechvn.resource.repositories.ImportStatusRepository;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class ImportBatchConsumer {
 
     private final ObjectMapper objectMapper;
-    private final ImportStatusRepository importStatusRepository;
     private final DynamicEntityTypeRepository entityTypeRepository;
+    private final ImportFileRepository importFileRepository;
     private final EntityManagerFactory emf;
 
     public ImportBatchConsumer(
             ObjectMapper objectMapper,
-            ImportStatusRepository importStatusRepository,
+            ImportFileRepository importFileRepository,
             DynamicEntityTypeRepository entityTypeRepository,
             EntityManagerFactory emf) {
         this.objectMapper = objectMapper;
-        this.importStatusRepository = importStatusRepository;
+        this.importFileRepository = importFileRepository;
         this.entityTypeRepository = entityTypeRepository;
         this.emf = emf;
     }
@@ -53,20 +49,18 @@ public class ImportBatchConsumer {
         this.importThread(cr.value()).run();
     }
 
-    private void tryToUpdateImportStatus(String fileName, String jobId, int totalRows, int successRow, int errorRows) {
+    private void tryToUpdateImportStatus(String fileName, String jobId, int successRow, int errorRows) {
         try {
-            var importStatus = importStatusRepository.findByJobId(jobId);
-            if (importStatus == null) {
-                importStatus = ImportStatus.builder()
-                        .jobId(jobId)
-                        .totalRows(totalRows)
-                        .build();
+            var importFile = importFileRepository.findIncludeStatusById(UUID.fromString(jobId));
+            if (importFile == null || importFile.getImportStatus() == null) {
+                log.warn("Cannot find import file named {} with jobId {}", fileName, jobId);
+                return;
             }
 
-            importStatus.setErrorRows(importStatus.getErrorRows() + errorRows);
-            importStatus.setSuccessRows(importStatus.getSuccessRows() + successRow);
+            importFile.getImportStatus().incError(errorRows);
+            importFile.getImportStatus().incSuccess(successRow);
 
-            importStatusRepository.save(importStatus);
+            importFileRepository.save(importFile);
         } catch (Exception e) {
             log.error("Cannot update import status job {} file {}. Trace {}", jobId, fileName, e.getMessage());
         }
@@ -77,7 +71,6 @@ public class ImportBatchConsumer {
             var tenant = (String) batchData.get("tenant");
             var jobId = (String) batchData.get("jobId");
             var fileName = (String) batchData.get("fileName");
-            var totalRows = (int) batchData.get("totalRows");
 
             var entityType = entityTypeRepository.findIncludeRelationsByCode((String) batchData.get("entityType"));
             if (entityType == null) {
@@ -116,7 +109,7 @@ public class ImportBatchConsumer {
 
                 transaction.commit();
 
-                tryToUpdateImportStatus(fileName, jobId, totalRows, batches.size(), 0);
+                tryToUpdateImportStatus(fileName, jobId, batches.size(), 0);
             }
         };
     }
