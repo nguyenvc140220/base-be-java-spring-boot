@@ -1,93 +1,89 @@
 package com.metechvn.dynamic.eventlisteners;
 
-import com.metechvn.dynamic.dtos.DynamicEntityPropertyDto;
-import com.metechvn.dynamic.dtos.DynamicEntityTypeDto;
-import com.metechvn.dynamic.dtos.DynamicPropertyDto;
+import com.metechvn.dynamic.dtos.BatchDynamicEntityDto;
+import com.metechvn.dynamic.dtos.FlattenDynamicEntityDto;
 import com.metechvn.dynamic.entities.DynamicEntity;
-import com.metechvn.dynamic.etos.DynamicEntitySavedEto;
 import com.metechvn.dynamic.events.DynamicEntitySavedEvent;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
-import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalApplicationListenerAdapter;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Component
 public class DynamicEntitySavedEventListener
         extends TransactionalApplicationListenerAdapter<DynamicEntitySavedEvent> {
 
-    public DynamicEntitySavedEventListener(
-            KafkaTemplate<String, Object> kafkaTemplate, DynamicEntityTypeRepository dynamicEntityTypeRepository, DynamicEntityRepository dynamicEntityRepository) {
-        super(new DynamicEntitySavedEventHandler(kafkaTemplate, dynamicEntityTypeRepository, dynamicEntityRepository));
+    public DynamicEntitySavedEventListener(DynamicEntitySavedEventHandler eventHandler) {
+        super(eventHandler);
     }
 
+    @Component
+    @RequiredArgsConstructor
     static class DynamicEntitySavedEventHandler implements ApplicationListener<DynamicEntitySavedEvent> {
 
         private final Logger log = LoggerFactory.getLogger(this.getClass());
         private final KafkaTemplate<String, Object> kafkaTemplate;
-        private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
         private final DynamicEntityRepository dynamicEntityRepository;
-
-        DynamicEntitySavedEventHandler(KafkaTemplate<String, Object> kafkaTemplate, DynamicEntityTypeRepository dynamicEntityTypeRepository, DynamicEntityRepository dynamicEntityRepository) {
-            this.kafkaTemplate = kafkaTemplate;
-            this.dynamicEntityTypeRepository = dynamicEntityTypeRepository;
-            this.dynamicEntityRepository = dynamicEntityRepository;
-        }
 
         @Override
         public void onApplicationEvent(DynamicEntitySavedEvent event) {
-            if (!(event.getSource() != null && event.getSource() instanceof DynamicEntity de)) return;
+            if (event.getSource() == null) {
+                return;
+            }
 
-            var dynamicEntity = dynamicEntityRepository.findIncludeRelationsById(de.getId());
-            if (dynamicEntity == null) return;
-            var dynamicEntityType = dynamicEntity.getEntityType();
-            var dynamicEntityTypeDto = DynamicEntityTypeDto
-                    .builder()
-                    .code(dynamicEntityType.getCode())
-                    .description(dynamicEntityType.getDescription())
-                    .displayName(dynamicEntityType.getDisplayName())
-                    .build();
-            dynamicEntityTypeDto.setId(dynamicEntityType.getId());
-            dynamicEntityTypeDto.setTenant(dynamicEntityType.getTenant());
+            var entities = new ArrayList<DynamicEntity>();
 
-            var properties = dynamicEntity.getProperties()
-                    .values()
-                    .stream()
-                    .map(p -> {
-                        var property = DynamicEntityPropertyDto
-                                .builder()
-                                .propertyCode(p.getEntityProperty().getCode())
-                                .entityPropertyValue(p.getEntityPropertyValue().getValue())
-                                .build();
-                        property.setId(p.getId());
-                        property.setTenant(p.getTenant());
+            if (event.getSource() instanceof DynamicEntity de) entities.add(de);
+            else if (event.getSource() instanceof List<?> deLst) {
+                entities.addAll(
+                        deLst.stream().filter(d -> d instanceof DynamicEntity).map(x -> (DynamicEntity) x).toList()
+                );
+            }
 
-                        return property;
-                    })
-                    .collect(Collectors.toMap(DynamicEntityPropertyDto::getPropertyCode, p -> p));
+            var entityIds = entities.stream().map(DynamicEntity::getId).toArray(UUID[]::new);
+            var dynamicEntities = dynamicEntityRepository.findIncludeRelationsById(entityIds);
+            if (dynamicEntities == null || dynamicEntities.isEmpty()) {
+                return;
+            }
 
+            var tenantEntities = new HashMap<String, BatchDynamicEntityDto<UUID>>();
+            for (var entity : dynamicEntities) {
+                if (!StringUtils.hasText(entity.getTenant()) || entity.getEntityType() == null) continue;
 
-            var entityEto = DynamicEntitySavedEto
-                    .builder()
-                    .entityType(dynamicEntityTypeDto)
-                    .properties(properties)
-                    .build();
-            entityEto.setId(dynamicEntity.getId());
-            entityEto.setTenant(dynamicEntity.getTenant());
-            try {
-                kafkaTemplate
-                        .send("MKT.BE.DynamicEntitySaved", de.getId().toString(), entityEto)
-                        .get();
+                if (!tenantEntities.containsKey(entity.getTenant())) {
+                    tenantEntities.put(
+                            entity.getTenant(),
+                            new BatchDynamicEntityDto<>(entity.getTenant(), entity.getEntityType().getCode())
+                    );
+                }
 
-                log.debug("Sent entity {} created to kafka", de.getId());
-            } catch (InterruptedException | ExecutionException e) {
-                log.error("Cannot send message to kafka. Trace {}", e.getMessage());
+                var flattenEntity = new FlattenDynamicEntityDto<>(entity.getId());
+                for (var prop : entity.getProperties().values()) {
+                    flattenEntity.put(prop.getCode(), prop.getEntityPropertyValue().getValue());
+                }
+
+                tenantEntities.get(entity.getTenant()).add(flattenEntity);
+            }
+
+            for (var entry : tenantEntities.entrySet()) {
+                try {
+                    kafkaTemplate.send("MKT.BE.DynamicEntitySaved", entry.getValue()).get();
+
+                    log.debug("Sent {} entity(s) of tenant {} to kafka", entry.getValue().batchSize(), entry.getKey());
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error("Cannot send message to kafka. Trace {}", e.getMessage());
+                }
             }
         }
     }

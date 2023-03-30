@@ -34,7 +34,8 @@ public class DataUtil {
         }
         return result;
     }
-    public static Integer[] listIntegerToArrayInteger(List<Integer> integerList){
+
+    public static Integer[] listIntegerToArrayInteger(List<Integer> integerList) {
         Integer[] arr = new Integer[integerList.size()];
         int count = 0;
         for (Integer integer : integerList) {
@@ -45,6 +46,7 @@ public class DataUtil {
         arr = Arrays.copyOfRange(arr, 0, count);
         return arr;
     }
+
     /**
      * Copy du lieu tu bean sang bean moi
      * Luu y chi copy duoc cac doi tuong o ngoai cung, list se duoc copy theo tham chieu
@@ -89,7 +91,7 @@ public class DataUtil {
             out.close();
 
             ObjectInputStream in = new ObjectInputStream(
-                new ByteArrayInputStream(bos.toByteArray()));
+                    new ByteArrayInputStream(bos.toByteArray()));
             T dto = (T) in.readObject();
             in.close();
             return dto;
@@ -572,7 +574,8 @@ public class DataUtil {
             dto = destClass.getConstructor().newInstance();
             BeanUtils.copyProperties(source, dto);
             return dto;
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
             return null;
         }
     }
@@ -1169,5 +1172,11 @@ public class DataUtil {
         return data == null ? "" : String.valueOf(data);
     }
 
+    public static double round(double value, int floatingPoint) {
+        if (floatingPoint < 1) floatingPoint = 1;
 
+        final double roundConst = Math.pow(10, floatingPoint);
+
+        return Math.round(value * roundConst) / roundConst;
+    }
 }
