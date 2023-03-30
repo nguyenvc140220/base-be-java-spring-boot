@@ -1,6 +1,7 @@
 package com.metechvn.dynamic.eventlisteners;
 
-import com.metechvn.dynamic.dtos.FlattenDynamicEntity;
+import com.metechvn.dynamic.dtos.BatchDynamicEntityDto;
+import com.metechvn.dynamic.dtos.FlattenDynamicEntityDto;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.events.DynamicEntitySavedEvent;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
@@ -56,15 +57,15 @@ public class DynamicEntitySavedEventListener
                 return;
             }
 
-            var tenantEntities = new HashMap<String, List<FlattenDynamicEntity<UUID>>>();
+            var tenantEntities = new HashMap<String, BatchDynamicEntityDto<UUID>>();
             for (var entity : dynamicEntities) {
                 if (!StringUtils.hasText(entity.getTenant())) continue;
 
                 if (!tenantEntities.containsKey(entity.getTenant())) {
-                    tenantEntities.put(entity.getTenant(), new ArrayList<>());
+                    tenantEntities.put(entity.getTenant(), new BatchDynamicEntityDto<>(entity.getTenant()));
                 }
 
-                var flattenEntity = new FlattenDynamicEntity<>(entity.getId());
+                var flattenEntity = new FlattenDynamicEntityDto<>(entity.getId());
                 for (var prop : entity.getProperties().values()) {
                     flattenEntity.put(prop.getCode(), prop.getEntityPropertyValue().getValue());
                 }
@@ -74,11 +75,9 @@ public class DynamicEntitySavedEventListener
 
             for (var entry : tenantEntities.entrySet()) {
                 try {
-                    kafkaTemplate
-                            .send("MKT.BE.DynamicEntitySaved", entry.getKey(), entry.getValue())
-                            .get();
+                    kafkaTemplate.send("MKT.BE.DynamicEntitySaved", entry.getValue()).get();
 
-                    log.debug("Sent {} entity(s) of tenant {} to kafka", entry.getValue().size(), entry.getKey());
+                    log.debug("Sent {} entity(s) of tenant {} to kafka", entry.getValue().batchSize(), entry.getKey());
                 } catch (InterruptedException | ExecutionException e) {
                     log.error("Cannot send message to kafka. Trace {}", e.getMessage());
                 }
