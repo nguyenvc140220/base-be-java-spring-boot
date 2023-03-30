@@ -21,10 +21,16 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
             Long deletedTime,
             UUID deletedBy,
             String code,
-            String displayName) {
+            String displayName,
+            String dataType,
+            String removable,
+            String editable) {
         super(id, creationTime, createdBy, lastModificationTime, lastModificationBy, deletedTime, deletedBy);
         this.code = code;
         this.displayName = displayName;
+        this.dataType = dataType;
+        this.removable = removable;
+        this.editable = editable;
     }
 
     public static PropertyListDto of(DynamicProperty p) {
@@ -46,5 +52,8 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
 
     private String code;
     private String displayName;
+    private String dataType;
+    private String removable;
+    private String editable;
 
 }
