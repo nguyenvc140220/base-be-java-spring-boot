@@ -3,7 +3,7 @@ package com.metechvn.contacts.controllers;
 import com.metechvn.common.BaseResponse;
 import com.metechvn.contacts.commands.AddHeaderMappingCommand;
 import com.metechvn.contacts.commands.SaveContactsFileCommand;
-import com.metechvn.dynamic.commands.EntityTypeAddPropertyCommand;
+import com.metechvn.contacts.entities.ContactsFileEntity;
 import com.metechvn.exception.BusinessException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,25 +26,26 @@ public class ImportContactsController {
 
 
     @PostMapping({"/import"})
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
     @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"},value = "/import")
-    public BaseResponse<Boolean> ImportContacts(@RequestParam("file") MultipartFile file) {
+    public BaseResponse<ContactsFileEntity> ImportContacts(@RequestParam("file") MultipartFile file) {
         try {
             String fileName= file.getOriginalFilename().replaceAll("\\s+","_");
             fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD);
-            fileName = fileName.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+            fileName = System.currentTimeMillis() + fileName.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
             String fileLocation = Paths.get(filePath,"uploads", "import", "contacts",fileName).toString();
             file.transferTo(new File(fileLocation));
             SaveContactsFileCommand cmd = new SaveContactsFileCommand();
             cmd.setFilePath(Paths.get("uploads", "import", "contacts",fileName).toString());
             cmd.setFileName(fileName);
-            System.out.println(bus.execute(cmd));
+            var contactFile  = bus.execute(cmd);
+            return BaseResponse.onCreated(contactFile);
         } catch (Exception e){
             throw new BusinessException(String.format("Upload %s không thành công!",e));
         }
-        return BaseResponse.onOk(true);
     }
 
+    @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
     @PostMapping({"/add-header-mapping"})
     public BaseResponse<Boolean> AddHeaderMapping(@Valid @RequestBody AddHeaderMappingCommand cmd) {
         System.out.println(bus.execute(cmd));
