@@ -10,21 +10,19 @@ import luongdev.cqrs.RequestHandler;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class AddHeaderMappingHandler  implements RequestHandler<ContactsFileEntity, AddHeaderMappingCommand> {
     private final ContactsFileEntityRepository contactsFileEntityRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     @Override
-    public ContactsFileEntity handle(AddHeaderMappingCommand addHeaderMappingCommand) {
-        var existing =  contactsFileEntityRepository.findById(addHeaderMappingCommand.contactsFileId);
+    public ContactsFileEntity handle(AddHeaderMappingCommand cmd) {
+        var existing =  contactsFileEntityRepository.findById(cmd.contactsFileId);
         if (existing.isEmpty())
-            throw new BusinessException(String.format("ID contact file %s không tồn tại", addHeaderMappingCommand.contactsFileId));
+            throw new BusinessException(String.format("ID contact file %s không tồn tại", cmd.contactsFileId));
         var entity = existing.get();
-        entity.setHeaderMapping((addHeaderMappingCommand.headerMapping));
-        applicationEventPublisher.publishEvent(new AddHeaderMappingEvent(entity));
+        entity.setHeaderMapping((cmd.headerMapping));
+        applicationEventPublisher.publishEvent(new AddHeaderMappingEvent(cmd));
         return contactsFileEntityRepository.save(entity);
     }
 }
