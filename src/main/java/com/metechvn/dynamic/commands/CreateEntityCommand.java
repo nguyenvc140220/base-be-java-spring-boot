@@ -24,11 +24,6 @@ public class CreateEntityCommand implements Request<DynamicEntity> {
     @Builder.Default
     private final Map<String, Object> properties = new HashMap<>();
 
-    public CreateEntityCommand(String code) {
-        this();
-        this.code = code;
-    }
-
     public CreateEntityCommand put(String key, Object value) {
         if (StringUtils.hasText(key)) this.properties.put(key, value);
 
