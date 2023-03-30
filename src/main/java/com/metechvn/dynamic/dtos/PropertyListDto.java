@@ -23,8 +23,8 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
             String code,
             String displayName,
             String dataType,
-            String removable,
-            String editable) {
+            boolean removable,
+            boolean editable) {
         super(id, creationTime, createdBy, lastModificationTime, lastModificationBy, deletedTime, deletedBy);
         this.code = code;
         this.displayName = displayName;
@@ -48,12 +48,15 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
 
         this.code = p.getCode();
         this.displayName = p.getDisplayName();
+        this.editable = p.getEditable();
+        this.removable = p.getRemovable();
+        this.dataType = p.getDataType() == null ? null : p.getDataType().toString();
     }
 
     private String code;
     private String displayName;
     private String dataType;
-    private String removable;
-    private String editable;
+    private boolean removable;
+    private boolean editable;
 
 }
