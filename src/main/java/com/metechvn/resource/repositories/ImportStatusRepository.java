@@ -1,6 +1,6 @@
-package com.metechvn.dynamic.repositories;
+package com.metechvn.resource.repositories;
 
-import com.metechvn.dynamic.entities.ImportStatus;
+import com.metechvn.resource.entities.ImportStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
