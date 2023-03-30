@@ -2,7 +2,6 @@ package com.metechvn.dynamic.consumers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.metechvn.config.KafkaSession;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.resource.entities.ImportStatus;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
@@ -27,7 +26,6 @@ public class ImportBatchConsumer {
     private final DynamicEntityTypeRepository entityTypeRepository;
     private final EntityManagerFactory emf;
 
-    @KafkaSession
     @KafkaListener(
             topics = "MKT.JOB.ImportExcelBatch",
             groupId = "${spring.kafka.client-id}",
