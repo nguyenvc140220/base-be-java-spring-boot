@@ -3,21 +3,26 @@ package com.metechvn.resource.queries.handlers;
 import com.metechvn.common.util.DataUtil;
 import com.metechvn.resource.dtos.ImportStatusDto;
 import com.metechvn.resource.queries.ImportStatusByJobIdQuery;
-import com.metechvn.resource.repositories.ImportStatusRepository;
+import com.metechvn.resource.repositories.ImportFileRepository;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.RequestHandler;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class ImportStatusByJobIdHandler implements RequestHandler<ImportStatusDto, ImportStatusByJobIdQuery> {
 
-    private final ImportStatusRepository importStatusRepository;
+    private final ImportFileRepository importFileRepository;
 
     @Override
     public ImportStatusDto handle(ImportStatusByJobIdQuery query) {
-        var status = importStatusRepository.findByJobId(query.getJobId());
-        if (status == null) return null;
+        var importFile = importFileRepository.findIncludeStatusById(UUID.fromString(query.getJobId()));
+        if (importFile == null || importFile.getImportStatus() == null) return null;
+
+        var status = importFile.getImportStatus();
+
 
         var builder = ImportStatusDto.builder()
                 .jobId(query.getJobId())

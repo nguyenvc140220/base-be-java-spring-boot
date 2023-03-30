@@ -4,7 +4,6 @@ import com.metechvn.dynamic.commands.DeletePropertyCommand;
 import com.metechvn.dynamic.entities.DynamicProperty;
 import com.metechvn.dynamic.repositories.DynamicPropertyRepository;
 import com.metechvn.exception.BusinessException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.RequestHandler;
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ public class DeletePropertyHandler implements RequestHandler<DynamicProperty, De
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    @Transactional
     public DynamicProperty handle(DeletePropertyCommand cmd) {
         var existing = dynamicPropertyRepository.findByCode(cmd.getCode());
         if (existing == null)

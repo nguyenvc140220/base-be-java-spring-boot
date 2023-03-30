@@ -57,6 +57,9 @@ dependencies {
     // kafka
     implementation group: 'io.confluent', name: 'kafka-json-schema-serializer', version: '7.3.2'
     implementation group: 'org.springframework.kafka', name: 'spring-kafka', version: '3.0.4'
+    //
+    implementation 'org.flywaydb:flyway-core:9.16.1'
+
 }
 dependencyManagement {
     imports {

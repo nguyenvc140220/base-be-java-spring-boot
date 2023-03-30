@@ -1,25 +1,24 @@
 package com.metechvn.contacts.commands.handlers;
 
 import com.metechvn.contacts.commands.SaveContactsFileCommand;
-import com.metechvn.contacts.entities.ContactsFileEntity;
-import com.metechvn.contacts.repositories.ContactsFileEntityRepository;
+import com.metechvn.resource.entities.ImportFile;
+import com.metechvn.resource.repositories.ImportFileRepository;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.RequestHandler;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SaveContactsFileHandler implements RequestHandler<ContactsFileEntity, SaveContactsFileCommand> {
+public class SaveContactsFileHandler implements RequestHandler<ImportFile, SaveContactsFileCommand> {
 
-    private final ContactsFileEntityRepository contactsFileEntityRepository;
+    private final ImportFileRepository importFileRepository;
 
     @Override
-    public ContactsFileEntity handle(SaveContactsFileCommand cmd) {
-        var dynamicEntityType = ContactsFileEntity.builder()
+    public ImportFile handle(SaveContactsFileCommand cmd) {
+        var dynamicEntityType = ImportFile.builder()
                 .fileName(cmd.getFileName())
                 .filePath(cmd.getFilePath())
-                .importStatus("PROCESS")
                 .build();
-        return contactsFileEntityRepository.save(dynamicEntityType);
+        return importFileRepository.save(dynamicEntityType);
     }
 }
