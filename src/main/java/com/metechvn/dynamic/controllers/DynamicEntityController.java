@@ -2,6 +2,7 @@ package com.metechvn.dynamic.controllers;
 
 import com.metechvn.common.BaseResponse;
 import com.metechvn.dynamic.commands.CreateEntityCommand;
+import com.metechvn.dynamic.commands.UpdateEntityCommand;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.Bus;
@@ -22,4 +23,9 @@ public class DynamicEntityController {
         return BaseResponse.onOk(true);
     }
 
+    @PutMapping({"", "/", "/update"})
+    public BaseResponse<Boolean> updateEntityType(@Valid @RequestBody UpdateEntityCommand cmd) {
+        System.out.println(bus.execute(cmd));
+        return BaseResponse.onOk(true);
+    }
 }
