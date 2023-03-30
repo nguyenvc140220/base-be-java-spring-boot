@@ -14,4 +14,10 @@ public interface DynamicPropertyRepository extends JpaRepository<DynamicProperty
 
     @Query("from DynamicProperty p where ?1 is null or lower(p.code) like ?1 or lower(p.displayName) like ?1")
     Page<DynamicProperty> findByKeyword(String keyword, Pageable page);
+
+    @Query(value = "SELECT count(dp)"
+            + " FROM DynamicEntityProperty dp"
+            + " WHERE dp.entityProperty.property.id = ?1")
+    Integer countValueById(UUID propertyId);
+
 }

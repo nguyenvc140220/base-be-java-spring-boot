@@ -3,6 +3,7 @@ package com.metechvn.dynamic.controllers;
 import com.metechvn.common.BaseResponse;
 import com.metechvn.common.PageResponse;
 import com.metechvn.dynamic.commands.CreatePropertyCommand;
+import com.metechvn.dynamic.commands.DeletePropertyCommand;
 import com.metechvn.dynamic.commands.UpdatePropertyCommand;
 import com.metechvn.dynamic.dtos.PropertyListDto;
 import com.metechvn.dynamic.queries.DynamicPropertyFilterQuery;
@@ -27,6 +28,12 @@ public class DynamicPropertyController {
 
     @PutMapping({""})
     public BaseResponse<Boolean> updateProperty(@Valid @RequestBody UpdatePropertyCommand cmd) {
+        System.out.println(bus.execute(cmd));
+        return BaseResponse.onOk(true);
+    }
+
+    @DeleteMapping({""})
+    public BaseResponse<Boolean> deleteProperty(@Valid @RequestBody DeletePropertyCommand cmd) {
         System.out.println(bus.execute(cmd));
         return BaseResponse.onOk(true);
     }
