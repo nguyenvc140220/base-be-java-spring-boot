@@ -29,19 +29,16 @@ public class ImportBatchConsumer {
     private final ImportStatusRepository importStatusRepository;
     private final DynamicEntityTypeRepository entityTypeRepository;
     private final EntityManagerFactory emf;
-    private final ExecutorService executorService;
 
     public ImportBatchConsumer(
             ObjectMapper objectMapper,
             ImportStatusRepository importStatusRepository,
             DynamicEntityTypeRepository entityTypeRepository,
-            EntityManagerFactory emf,
-            @Value("${import.max-threads:16}") int numOfThreads) {
+            EntityManagerFactory emf) {
         this.objectMapper = objectMapper;
         this.importStatusRepository = importStatusRepository;
         this.entityTypeRepository = entityTypeRepository;
         this.emf = emf;
-        this.executorService = Executors.newFixedThreadPool(numOfThreads);
     }
 
     @KafkaListener(
@@ -53,13 +50,7 @@ public class ImportBatchConsumer {
             return;
         }
 
-        executorService.submit(this.importThread(cr.value()));
-
-        try {
-            var activeThreads = ((ThreadPoolExecutor) executorService).getActiveCount();
-            log.info("Submit new import thread. Current active {}", activeThreads);
-        } catch (Exception ignored) {
-        }
+        this.importThread(cr.value()).run();
     }
 
     private void tryToUpdateImportStatus(String fileName, String jobId, int totalRows, int successRow, int errorRows) {
