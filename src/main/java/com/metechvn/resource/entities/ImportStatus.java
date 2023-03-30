@@ -1,4 +1,4 @@
-package com.metechvn.dynamic.entities;
+package com.metechvn.resource.entities;
 
 import com.metechvn.common.persistent.UUIDFullAuditedEntityImpl;
 import jakarta.persistence.Column;
