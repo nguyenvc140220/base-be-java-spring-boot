@@ -7,18 +7,19 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Serializable;
 import java.util.*;
 
-public class FlattenDynamicEntity<T extends Serializable> implements Map<String, Object> {
+public class FlattenDynamicEntityDto<T extends Serializable> implements Map<String, Object> {
 
     private T id;
 
     @JsonIgnore
     private final Map<String, Object> properties = new HashMap<>();
 
-    private FlattenDynamicEntity() {
+    private FlattenDynamicEntityDto() {
     }
 
-    public FlattenDynamicEntity(T id) {
+    public FlattenDynamicEntityDto(T id) {
         this.id = id;
+        this.put("id", id);
     }
 
     @Override
