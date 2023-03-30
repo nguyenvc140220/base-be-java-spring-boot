@@ -2,6 +2,7 @@ package com.metechvn.contacts.eventlisteners;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.metechvn.common.CurrentTenantProvider;
 import com.metechvn.contacts.commands.AddHeaderMappingCommand;
 import com.metechvn.contacts.events.AddHeaderMappingEvent;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,11 @@ public class AddHeaderMappingEventHandler implements ApplicationListener<AddHead
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-
+    private final CurrentTenantProvider currentTenantProvider;
     @Override
     public void onApplicationEvent(AddHeaderMappingEvent event) {
         if (!(event.getSource() != null && event.getSource() instanceof AddHeaderMappingCommand de)) return;
+        de.getHeaders().put("tenant", currentTenantProvider.getTenant());
         try {
             kafkaTemplate
                     .send("MKT.BE.ImportExcelRequest", de.getHeaders())
