@@ -59,10 +59,13 @@ public class DynamicEntitySavedEventListener
 
             var tenantEntities = new HashMap<String, BatchDynamicEntityDto<UUID>>();
             for (var entity : dynamicEntities) {
-                if (!StringUtils.hasText(entity.getTenant())) continue;
+                if (!StringUtils.hasText(entity.getTenant()) || entity.getEntityType() == null) continue;
 
                 if (!tenantEntities.containsKey(entity.getTenant())) {
-                    tenantEntities.put(entity.getTenant(), new BatchDynamicEntityDto<>(entity.getTenant()));
+                    tenantEntities.put(
+                            entity.getTenant(),
+                            new BatchDynamicEntityDto<>(entity.getTenant(), entity.getEntityType().getCode())
+                    );
                 }
 
                 var flattenEntity = new FlattenDynamicEntityDto<>(entity.getId());
