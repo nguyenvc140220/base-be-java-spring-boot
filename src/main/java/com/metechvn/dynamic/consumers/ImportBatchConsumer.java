@@ -73,13 +73,9 @@ public class ImportBatchConsumer {
             var tenant = (String) batchData.get("tenant");
             var jobId = (String) batchData.get("jobId");
             var fileName = (String) batchData.get("fileName");
-            var totalRowsStr = (String) batchData.get("totalRows");
+
             var totalRows = 0;
-            try {
-                totalRows = Integer.parseInt(totalRowsStr);
-            } catch (NumberFormatException e) {
-                log.error("Cannot parse totalRows {}. Trace {}", totalRowsStr, e.getMessage());
-            }
+            if (batchData.get("totalRows") instanceof Integer rows) totalRows = rows;
 
             var entityType = entityTypeRepository.findIncludeRelationsByCode((String) batchData.get("entityType"));
             if (entityType == null) {
