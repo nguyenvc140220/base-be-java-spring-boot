@@ -5,37 +5,36 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metechvn.resource.repositories.ImportFileRepository;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
+import com.metechvn.validators.IDynamicTypeValidator;
+import com.metechvn.validators.dtos.DynamicTypeValidator;
+import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
+import com.metechvn.validators.exceptions.DynamicTypeValidatorException;
 import jakarta.persistence.EntityManagerFactory;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ImportBatchConsumer {
 
     private final ObjectMapper objectMapper;
+    private final IDynamicTypeValidator dynamicTypeValidator;
     private final DynamicEntityTypeRepository entityTypeRepository;
     private final ImportFileRepository importFileRepository;
     private final EntityManagerFactory emf;
-
-    public ImportBatchConsumer(
-            ObjectMapper objectMapper,
-            ImportFileRepository importFileRepository,
-            DynamicEntityTypeRepository entityTypeRepository,
-            EntityManagerFactory emf) {
-        this.objectMapper = objectMapper;
-        this.importFileRepository = importFileRepository;
-        this.entityTypeRepository = entityTypeRepository;
-        this.emf = emf;
-    }
 
     @KafkaListener(
             topics = "MKT.JOB.ImportExcelBatch",
@@ -89,27 +88,50 @@ public class ImportBatchConsumer {
                     transaction = session.getTransaction();
                 }
 
+                var validators = entityType.getProperties().entrySet()
+                        .stream()
+                        .filter(e -> StringUtils.hasText(e.getValue().getProperty().getValidators()))
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> DynamicTypeValidator.fromJson(e.getValue().getProperty().getValidators())
+                        ));
+
+                var exceptionRows = new ArrayList<Map<String, Object>>();
 
                 for (var row : batches) {
                     var entity = new DynamicEntity();
                     entity.setEntityType(entityType);
                     entity.setTenant(tenant);
 
-                    // TODO: Validate entities here
+                    var validationResult = true;
+                    for (var entry : entityType.getProperties().entrySet()) {
+                        var value = row.get(entry.getKey());
 
-                    for (var entry : row.entrySet()) {
-                        var property = entityType.getProperty(entry.getKey());
-                        if (property == null) continue;
+                        try {
+                            dynamicTypeValidator.test(
+                                    new DynamicTypeValidatorDto(entry.getKey(), value, validators.get(entry.getKey()))
+                            );
+                        } catch (DynamicTypeValidatorException e) {
+                            validationResult = false;
+                            continue;
+                        }
 
-
-                        entity.set(property, entry.getValue());
+                        entity.set(entry.getValue(), entry.getValue());
                     }
+
+                    if (!validationResult) {
+                        exceptionRows.add(row);
+                        continue;
+                    }
+
                     session.persist(entity);
                 }
 
                 transaction.commit();
 
-                tryToUpdateImportStatus(fileName, jobId, batches.size(), 0);
+                tryToUpdateImportStatus(fileName, jobId, batches.size(), exceptionRows.size());
+
+                // TODO: push error rows to kafka to send end-user
             }
         };
     }
