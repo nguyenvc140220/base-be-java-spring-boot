@@ -59,6 +59,8 @@ public class ImportBatchConsumer {
             if (importFile.getTotalRecords() == null
                     || importFile.getTotalRecords() <= 0) importFile.setTotalRecords((long) totalRows);
 
+            if (importFile.getImportStatus().getTotalRows() <= 0) importFile.getImportStatus().setTotalRows(totalRows);
+
             importFile.getImportStatus().incError(errorRows);
             importFile.getImportStatus().incSuccess(successRow);
 
