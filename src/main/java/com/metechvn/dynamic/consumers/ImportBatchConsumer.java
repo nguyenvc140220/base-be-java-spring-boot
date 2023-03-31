@@ -124,7 +124,7 @@ public class ImportBatchConsumer {
                             continue;
                         }
 
-                        entity.set(entry.getValue(), entry.getValue());
+                        entity.set(entry.getValue(), value);
                     }
 
                     if (!validationResult) {
