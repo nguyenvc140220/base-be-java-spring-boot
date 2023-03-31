@@ -6,13 +6,22 @@ import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
 import com.metechvn.exception.BusinessException;
+import com.metechvn.validators.IDynamicTypeValidator;
+import com.metechvn.validators.dtos.DynamicTypeValidator;
+import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.RequestHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class CreateEntityHandler implements RequestHandler<DynamicEntity, CreateEntityCommand> {
+
+    private final IDynamicTypeValidator validator;
     private final CurrentTenantProvider currentTenantProvider;
     private final DynamicEntityRepository dynamicEntityRepository;
     private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
@@ -28,13 +37,25 @@ public class CreateEntityHandler implements RequestHandler<DynamicEntity, Create
         entity.setEntityType(typeIncludeProps);
         entity.setTenant(currentTenantProvider.getTenant());
 
+        var validators = typeIncludeProps.getProperties().entrySet()
+                .stream()
+                .filter(e -> StringUtils.hasText(e.getValue().getProperty().getValidators()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> DynamicTypeValidator.fromJson(e.getValue().getProperty().getValidators())
+                ));
+
         for (var entry : cmd.getProperties().entrySet()) {
             if (!typeIncludeProps.exists(entry.getKey())) continue;
 
-            // validate value
-            //...
+            var propValidators = validators.get(entry.getKey());
+            if (propValidators != null && !propValidators.isEmpty()) {
+                var validator = new DynamicTypeValidatorDto(entry.getKey(), entry.getValue(), propValidators);
+                validator.setValidators(propValidators);
 
-            // set value
+                this.validator.test(validator);
+            }
+
             entity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
         }
 
