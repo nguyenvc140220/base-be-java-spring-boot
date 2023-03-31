@@ -48,13 +48,16 @@ public class ImportBatchConsumer {
         this.importThread(cr.value()).run();
     }
 
-    private void tryToUpdateImportStatus(String fileName, String jobId, int successRow, int errorRows) {
+    private void tryToUpdateImportStatus(String fileName, String jobId, int totalRows, int successRow, int errorRows) {
         try {
             var importFile = importFileRepository.findIncludeStatusById(UUID.fromString(jobId));
             if (importFile == null || importFile.getImportStatus() == null) {
                 log.warn("Cannot find import file named {} with jobId {}", fileName, jobId);
                 return;
             }
+
+            if (importFile.getTotalRecords() == null
+                    || importFile.getTotalRecords() <= 0) importFile.setTotalRecords((long) totalRows);
 
             importFile.getImportStatus().incError(errorRows);
             importFile.getImportStatus().incSuccess(successRow);
@@ -70,6 +73,13 @@ public class ImportBatchConsumer {
             var tenant = (String) batchData.get("tenant");
             var jobId = (String) batchData.get("jobId");
             var fileName = (String) batchData.get("fileName");
+            var totalRowsStr = (String) batchData.get("totalRows");
+            var totalRows = 0;
+            try {
+                totalRows = Integer.parseInt(totalRowsStr);
+            } catch (NumberFormatException e) {
+                log.error("Cannot parse totalRows {}. Trace {}", totalRowsStr, e.getMessage());
+            }
 
             var entityType = entityTypeRepository.findIncludeRelationsByCode((String) batchData.get("entityType"));
             if (entityType == null) {
@@ -129,7 +139,7 @@ public class ImportBatchConsumer {
 
                 transaction.commit();
 
-                tryToUpdateImportStatus(fileName, jobId, batches.size(), exceptionRows.size());
+                tryToUpdateImportStatus(fileName, jobId, totalRows, batches.size(), exceptionRows.size());
 
                 // TODO: push error rows to kafka to send end-user
             }
