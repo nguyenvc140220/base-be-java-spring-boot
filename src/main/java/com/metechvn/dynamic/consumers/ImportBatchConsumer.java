@@ -105,7 +105,7 @@ public class ImportBatchConsumer {
                         ));
 
                 var exceptionRows = new ArrayList<Map<String, Object>>();
-
+                var successRows = 0;
                 for (var row : batches) {
                     var entity = new DynamicEntity();
                     entity.setEntityType(entityType);
@@ -133,11 +133,12 @@ public class ImportBatchConsumer {
                     }
 
                     session.persist(entity);
+                    successRows++;
                 }
 
                 transaction.commit();
 
-                tryToUpdateImportStatus(fileName, jobId, totalRows, batches.size(), exceptionRows.size());
+                tryToUpdateImportStatus(fileName, jobId, totalRows, successRows, exceptionRows.size());
 
                 // TODO: push error rows to kafka to send end-user
             }
