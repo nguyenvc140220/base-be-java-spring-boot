@@ -1,5 +1,6 @@
 package com.metechvn.exception;
 
+import com.metechvn.validators.exceptions.DynamicTypeValidatorException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -33,6 +34,15 @@ public class ErrorHandlerController extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleBusinessError(BusinessException ex) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
         apiError.setMsg(ex.getMessage());
+
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(value = {DynamicTypeValidatorException.class})
+    protected ResponseEntity<Object> handleValidationError(DynamicTypeValidatorException ex) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
+        apiError.setMsg(ex.getMessage());
+        apiError.setDetail(ex.getError());
 
         return buildResponseEntity(apiError);
     }

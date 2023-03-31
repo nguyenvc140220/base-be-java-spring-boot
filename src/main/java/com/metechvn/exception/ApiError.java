@@ -1,6 +1,7 @@
 package com.metechvn.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
  * @since 1.0
  */
 @Data
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ApiError {
 
     private HttpStatus status;
@@ -22,7 +24,7 @@ public class ApiError {
     private String msg;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String debugMessage;
-//    private List<ApiSubError> subErrors;
+    //    private List<ApiSubError> subErrors;
     private Object detail;
 
     private ApiError() {
