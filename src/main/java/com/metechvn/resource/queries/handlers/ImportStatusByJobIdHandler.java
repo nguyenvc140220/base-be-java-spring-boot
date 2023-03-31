@@ -26,6 +26,7 @@ public class ImportStatusByJobIdHandler implements RequestHandler<ImportStatusDt
 
         var builder = ImportStatusDto.builder()
                 .jobId(query.getJobId())
+                .fileName(importFile.getFileName())
                 .totalRows(status.getTotalRows())
                 .errorRows(status.getErrorRows())
                 .successRows(status.getSuccessRows());
