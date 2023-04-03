@@ -22,6 +22,9 @@ ext {
 }
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(':mkt-common')
+
     // excel
     implementation 'org.apache.poi:poi:5.2.3'
     implementation 'org.apache.poi:poi-ooxml:5.2.3'
@@ -65,7 +68,4 @@ dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
-}
-test {
-    useJUnitPlatform()
 }

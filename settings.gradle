@@ -1,2 +1,3 @@
 rootProject.name = 'mkt-be'
 
+include('mkt-common', 'mkt-api')

@@ -1,0 +1,71 @@
+plugins {
+    id 'org.springframework.boot' version '3.0.4'
+    id 'io.spring.dependency-management' version '1.1.0'
+    id 'java'
+}
+
+
+group 'com.metechvn'
+version '1.0'
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+//    //Swagger
+//    implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.14'
+//    //jaeger
+//    implementation 'io.opentracing.contrib:opentracing-spring-jaeger-cloud-starter:3.3.1'
+//
+//    // feign
+//    implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.1'
+//
+//
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+
+
+    implementation group: 'jakarta.persistence', name: 'jakarta.persistence-api', version: '3.1.0'
+    implementation 'org.projectlombok:lombok:1.18.22'
+
+    implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
+        exclude group: 'org.hibernate', module: 'hibernate-core'
+    }
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation('org.postgresql:postgresql')
+
+    // hibernate
+    implementation 'org.hibernate:hibernate-core:6.1.7.Final'
+
+//    // elastic
+//    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+//    implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.9'
+//    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: '5.0.3'
+//
+//    // kafka
+//    implementation group: 'org.springframework.kafka', name: 'spring-kafka', version: '3.0.4'
+
+    implementation 'org.apache.kafka:kafka-clients:3.4.0'
+
+//
+    runtimeOnly 'org.postgresql:postgresql'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+//    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//
+//    implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '7.2'
+//    implementation group: 'org.json', name: 'json', version: '20220320'
+}
+
+test {
+    useJUnitPlatform()
+}
