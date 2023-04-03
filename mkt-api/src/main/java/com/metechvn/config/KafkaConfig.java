@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.Map;
@@ -87,6 +88,16 @@ public class KafkaConfig {
             ConsumerFactory<Object, Object> objConsumerFactory) {
         var factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(objConsumerFactory);
+
+        return factory;
+    }
+
+    @Bean(name = "objListenerAckManualContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<Object, Object> objListenerAckManualContainerFactory(
+            ConsumerFactory<Object, Object> objConsumerFactory) {
+        var factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(objConsumerFactory);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
         return factory;
     }
