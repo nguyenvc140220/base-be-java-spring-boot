@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metechvn.common.FullAuditDto;
 import com.metechvn.common.persistent.FullAuditedEntity;
+import com.metechvn.dynamic.DataType;
+import com.metechvn.dynamic.DynamicInputType;
 import com.metechvn.dynamic.entities.DynamicProperty;
 import com.metechvn.validators.dtos.DynamicTypeValidator;
 import lombok.Builder;
@@ -31,23 +33,25 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
             UUID deletedBy,
             String code,
             String displayName,
-            String dataType,
             String validators,
             String defaultValue,
             String hintText,
             String tooltip,
+            DataType dataType,
+            DynamicInputType inputType,
             boolean removable,
             boolean editable) {
         super(id, creationTime, createdBy, lastModificationTime, lastModificationBy, deletedTime, deletedBy);
         this.code = code;
         this.displayName = displayName;
         this.validators = this.tryParseValidators(validators);
-        this.dataType = dataType;
         this.removable = removable;
         this.editable = editable;
         this.defaultValue = defaultValue;
         this.hintText = hintText;
         this.tooltip = tooltip;
+        this.dataType = dataType == null ? null : dataType.toString();
+        this.inputType = inputType == null ? null : inputType.toString();
     }
 
     public static PropertyListDto of(DynamicProperty p) {
@@ -72,13 +76,15 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
         this.defaultValue = p.getDefaultValue();
         this.hintText = p.getHintText();
         this.tooltip = p.getTooltip();
+        this.inputType = p.getInputType() == null ? null : p.getInputType().toString();
     }
 
     private List<DynamicTypeValidator> tryParseValidators(String json) {
         if (StringUtils.isEmpty(json)) return Collections.emptyList();
 
         try {
-            return new ObjectMapper().readValue(json, new TypeReference<>() { });
+            return new ObjectMapper().readValue(json, new TypeReference<>() {
+            });
         } catch (JsonProcessingException e) {
             return Collections.emptyList();
         }
@@ -87,6 +93,7 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
     private String code;
     private String displayName;
     private String dataType;
+    private String inputType;
     private boolean removable;
     private boolean editable;
     private List<DynamicTypeValidator> validators;
