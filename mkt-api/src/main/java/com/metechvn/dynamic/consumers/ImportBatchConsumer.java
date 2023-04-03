@@ -16,6 +16,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -39,13 +40,15 @@ public class ImportBatchConsumer {
     @KafkaListener(
             topics = "MKT.JOB.ImportExcelBatch",
             groupId = "${spring.kafka.client-id}",
-            containerFactory = "objListenerContainerFactory")
-    public void onBatch(ConsumerRecord<Object, Map<String, Object>> cr) {
+            containerFactory = "objListenerAckManualContainerFactory")
+    public void onBatch(ConsumerRecord<Object, Map<String, Object>> cr, Acknowledgment ack) {
         if (cr.value() == null) {
             return;
         }
 
         this.importThread(cr.value()).run();
+
+        ack.acknowledge();
     }
 
     private void tryToUpdateImportStatus(String fileName, String jobId, int totalRows, int successRow, int errorRows) {
