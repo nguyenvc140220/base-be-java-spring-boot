@@ -10,13 +10,13 @@ import luongdev.cqrs.Request;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DynamicPropertyFilterQuery extends PageRequest implements Request<PageResponse<DynamicProperty>> {
+public class DynamicPropertyListQuery extends PageRequest implements Request<PageResponse<DynamicProperty>> {
 
     private String entityTypeCode;
     private String keyword;
 
     @Builder
-    public DynamicPropertyFilterQuery(int pageNumber, int pageSize, String entityTypeCode, String keyword) {
+    public DynamicPropertyListQuery(int pageNumber, int pageSize, String entityTypeCode, String keyword) {
         super(pageNumber, pageSize);
         this.entityTypeCode = entityTypeCode;
         this.keyword = keyword;
