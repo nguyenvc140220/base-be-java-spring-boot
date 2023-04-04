@@ -23,4 +23,5 @@ public class SegmentationController {
         return BaseResponse.onCreated(SegmentationListDto.of(bus.execute(cmd)));
     }
 
+
 }
