@@ -8,6 +8,10 @@ import java.util.UUID;
 public abstract class UUIDFullAuditedEntityImpl extends HaveTenantEntityImpl<UUID, UUID> {
 
     protected UUIDFullAuditedEntityImpl() {
-        setId(UUID.randomUUID());
+        this(UUID.randomUUID());
+    }
+
+    protected UUIDFullAuditedEntityImpl(UUID id) {
+        setId(id);
     }
 }
