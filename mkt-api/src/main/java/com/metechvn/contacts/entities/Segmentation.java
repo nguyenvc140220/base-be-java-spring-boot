@@ -4,17 +4,14 @@ import com.metechvn.common.persistent.UUIDFullAuditedEntityImpl;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @Table(name = "segmentation")
 public class Segmentation extends UUIDFullAuditedEntityImpl {
 
@@ -29,14 +26,13 @@ public class Segmentation extends UUIDFullAuditedEntityImpl {
     )
     private List<SegmentationFilter> segmentationFilters = new ArrayList<>();
 
-    public Segmentation(String name) {
+    public Segmentation() {
         super();
-        this.name = name;
     }
 
     @Builder
-    public Segmentation(UUID id, String name) {
-        super(id);
+    public Segmentation(String name) {
+        this();
         this.name = name;
     }
 
