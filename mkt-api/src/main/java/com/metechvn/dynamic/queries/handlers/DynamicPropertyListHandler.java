@@ -3,7 +3,7 @@ package com.metechvn.dynamic.queries.handlers;
 import com.metechvn.common.PageResponse;
 import com.metechvn.dynamic.entities.DynamicEntityTypeProperty;
 import com.metechvn.dynamic.entities.DynamicProperty;
-import com.metechvn.dynamic.queries.DynamicPropertyFilterQuery;
+import com.metechvn.dynamic.queries.DynamicPropertyListQuery;
 import com.metechvn.dynamic.repositories.DynamicEntityTypePropertyRepository;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
 import com.metechvn.dynamic.repositories.DynamicPropertyRepository;
@@ -17,21 +17,21 @@ import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
-public class DynamicPropertyFilterHandler
-        implements RequestHandler<PageResponse<DynamicProperty>, DynamicPropertyFilterQuery> {
+public class DynamicPropertyListHandler
+        implements RequestHandler<PageResponse<DynamicProperty>, DynamicPropertyListQuery> {
 
     private final DynamicPropertyRepository dynamicPropertyRepository;
     private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
     private final DynamicEntityTypePropertyRepository dynamicEntityTypePropertyRepository;
 
     @Override
-    public PageResponse<DynamicProperty> handle(DynamicPropertyFilterQuery query) {
+    public PageResponse<DynamicProperty> handle(DynamicPropertyListQuery query) {
         if (StringUtils.isEmpty(query.getEntityTypeCode())) return filterWithoutEntityType(query);
 
         return filterWithEntityType(query);
     }
 
-    private PageResponse<DynamicProperty> filterWithEntityType(DynamicPropertyFilterQuery query) {
+    private PageResponse<DynamicProperty> filterWithEntityType(DynamicPropertyListQuery query) {
         var filterKeyword = StringUtils.isEmpty(query.getKeyword())
                 ? null
                 : "%" + query.getKeyword() + "%s";
@@ -56,7 +56,7 @@ public class DynamicPropertyFilterHandler
         );
     }
 
-    private PageResponse<DynamicProperty> filterWithoutEntityType(DynamicPropertyFilterQuery query) {
+    private PageResponse<DynamicProperty> filterWithoutEntityType(DynamicPropertyListQuery query) {
         var filterKeyword = StringUtils.isEmpty(query.getKeyword())
                 ? null
                 : "%" + query.getKeyword() + "%s";

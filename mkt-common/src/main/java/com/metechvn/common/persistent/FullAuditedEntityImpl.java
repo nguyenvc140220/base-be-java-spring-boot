@@ -13,19 +13,19 @@ public abstract class FullAuditedEntityImpl<K extends Serializable, U extends Se
     private K id;
 
     @Column(name = "creation_time")
-    private Long creationTime;
+    private Long creationTime = 0L;
 
     @Column(name = "creation_by")
     private U creationBy;
 
     @Column(name = "last_modification_time")
-    private Long lastModificationTime;
+    private Long lastModificationTime = 0L;
 
     @Column(name = "last_modification_by")
     private U lastModificationBy;
 
     @Column(name = "deleted_time")
-    private Long deletedTime;
+    private Long deletedTime = 0L;
 
     @Column(name = "deleted_by")
     private U deletedBy;

@@ -14,6 +14,7 @@ import java.util.UUID;
 public class SegmentationListDto extends FullAuditDto<UUID, UUID> {
 
     private String name;
+    private int numOfContacts = 0;
 
     @Builder
     public SegmentationListDto(
@@ -24,9 +25,11 @@ public class SegmentationListDto extends FullAuditDto<UUID, UUID> {
             UUID lastModificationBy,
             Long deletedTime,
             UUID deletedBy,
-            String name) {
+            String name,
+            int numOfContacts) {
         super(id, creationTime, createdBy, lastModificationTime, lastModificationBy, deletedTime, deletedBy);
         this.name = name;
+        this.numOfContacts = numOfContacts;
     }
 
     protected SegmentationListDto() {
@@ -39,6 +42,7 @@ public class SegmentationListDto extends FullAuditDto<UUID, UUID> {
         if (!(e instanceof Segmentation seg)) return;
 
         this.name = seg.getName();
+        this.numOfContacts = seg.getNumOfContacts();
     }
 
     public static SegmentationListDto of(Segmentation segmentation) {

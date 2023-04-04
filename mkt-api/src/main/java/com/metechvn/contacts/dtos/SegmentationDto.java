@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metechvn.common.persistent.FullAuditedEntity;
 import com.metechvn.contacts.entities.Segmentation;
 import com.metechvn.filter.Expression;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -32,8 +31,19 @@ public class SegmentationDto extends SegmentationListDto {
             Long deletedTime,
             UUID deletedBy,
             String name,
+            int numOfContacts,
             List<Expression> filters) {
-        super(id, creationTime, createdBy, lastModificationTime, lastModificationBy, deletedTime, deletedBy, name);
+        super(
+                id,
+                creationTime,
+                createdBy,
+                lastModificationTime,
+                lastModificationBy,
+                deletedTime,
+                deletedBy,
+                name,
+                numOfContacts
+        );
 
         if (filters != null && !filters.isEmpty()) this.filters.addAll(filters);
     }

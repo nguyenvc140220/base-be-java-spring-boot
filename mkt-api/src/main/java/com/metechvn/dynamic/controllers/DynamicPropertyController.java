@@ -6,7 +6,7 @@ import com.metechvn.dynamic.commands.CreatePropertyCommand;
 import com.metechvn.dynamic.commands.DeletePropertyCommand;
 import com.metechvn.dynamic.commands.UpdatePropertyCommand;
 import com.metechvn.dynamic.dtos.PropertyListDto;
-import com.metechvn.dynamic.queries.DynamicPropertyFilterQuery;
+import com.metechvn.dynamic.queries.DynamicPropertyListQuery;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.Bus;
@@ -45,7 +45,7 @@ public class DynamicPropertyController {
             @RequestParam(name = "type", required = false) String entityTypeCode,
             @RequestParam(name = "keyword", required = false) String keyword) {
 
-        var query = DynamicPropertyFilterQuery.builder()
+        var query = DynamicPropertyListQuery.builder()
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .entityTypeCode(entityTypeCode)

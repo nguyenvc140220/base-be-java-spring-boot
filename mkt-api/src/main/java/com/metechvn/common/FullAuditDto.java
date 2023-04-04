@@ -26,7 +26,11 @@ public abstract class FullAuditDto<T extends Serializable, UK extends Serializab
         this.id = e.getId();
         this.creationTime = e.getCreationTime();
         this.createdBy = e.getCreationBy();
-        this.lastModificationTime = e.getLastModificationTime();
+        this.lastModificationTime = e.getLastModificationTime() == null
+                ? null
+                : e.getLastModificationTime() <= 0
+                /**/ ? null
+                /**/ : e.getLastModificationTime();
         this.lastModificationBy = e.getLastModificationBy();
         this.deletedBy = e.getDeletedBy();
         this.deletedBy = e.getDeletedBy();
