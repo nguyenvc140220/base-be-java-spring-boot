@@ -18,6 +18,9 @@ public class Segmentation extends UUIDFullAuditedEntityImpl {
     @Column(name = "name", length = 510)
     private String name;
 
+    @Column(name = "num_of_contacts", columnDefinition = "int default 0")
+    private int numOfContacts;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @JoinTable(
             name = "join_segmentation_filter",
@@ -31,9 +34,10 @@ public class Segmentation extends UUIDFullAuditedEntityImpl {
     }
 
     @Builder
-    public Segmentation(String name) {
+    public Segmentation(String name, int numOfContacts) {
         this();
         this.name = name;
+        this.numOfContacts = numOfContacts;
     }
 
     public Segmentation filter(SegmentationFilter... filters) {
