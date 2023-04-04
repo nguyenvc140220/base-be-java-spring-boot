@@ -47,7 +47,10 @@ public class CreateSegmentationHandler implements RequestHandler<Segmentation, C
         if (cmd.getFilters() != null) {
             try {
                 var json = objectMapper.writeValueAsString(cmd.getFilters());
-                if (StringUtils.hasText(json)) return List.of(SegmentationFilter.builder().filters(json).build());
+                var segmentation = SegmentationFilter.builder().filters(json).build();
+                segmentation.setName(cmd.getName());
+
+                if (StringUtils.hasText(json)) return List.of(segmentation);
 
                 throw new RuntimeException("segmentation filter(s) json is empty!");
             } catch (JsonProcessingException | RuntimeException e) {
