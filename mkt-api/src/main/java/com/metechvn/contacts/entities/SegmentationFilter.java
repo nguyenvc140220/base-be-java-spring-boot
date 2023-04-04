@@ -2,6 +2,7 @@ package com.metechvn.contacts.entities;
 
 import com.metechvn.common.persistent.UUIDFullAuditedEntityImpl;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,4 +25,13 @@ public class SegmentationFilter extends UUIDFullAuditedEntityImpl {
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "segmentationFilters")
     private List<Segmentation> segmentations = new ArrayList<>();
+
+    @Builder
+    public SegmentationFilter(String name, String filters, List<Segmentation> segmentations) {
+        this();
+
+        this.name = name;
+        this.filters = filters;
+        this.segmentations = segmentations;
+    }
 }
