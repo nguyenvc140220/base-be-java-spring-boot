@@ -3,12 +3,14 @@ package com.metechvn.contacts.controllers;
 import com.metechvn.common.BaseResponse;
 import com.metechvn.contacts.commands.AddHeaderMappingCommand;
 import com.metechvn.contacts.commands.SaveContactsFileCommand;
+import com.metechvn.contacts.events.ContactUploadEvent;
 import com.metechvn.resource.entities.ImportFile;
 import com.metechvn.exception.BusinessException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.Bus;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +27,8 @@ public class ImportContactsController {
     @Value("${file.upload}")
     private String filePath;
 
+    private final ApplicationEventPublisher publisher;
+
 
     @PostMapping({"/import"})
     @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
@@ -40,6 +44,9 @@ public class ImportContactsController {
             cmd.setFilePath(Paths.get("uploads", "import", "contacts", fileName).toString());
             cmd.setFileName(fileName);
             var contactFile = bus.execute(cmd);
+
+            publisher.publishEvent(new ContactUploadEvent(contactFile));
+
             return BaseResponse.onCreated(contactFile);
         } catch (Exception e) {
             throw new BusinessException(String.format("Upload %s không thành công!", e));
