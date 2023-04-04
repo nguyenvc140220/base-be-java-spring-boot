@@ -21,7 +21,7 @@ public class SegmentationListHandler implements RequestHandler<PageResponse<Segm
     public PageResponse<Segmentation> handle(SegmentationListQuery query) {
         var filterKeyword = StringUtils.isEmpty(query.getKeyword())
                 ? null
-                : "%" + query.getKeyword() + "%s";
+                : ("%" + query.getKeyword() + "%").toLowerCase();
 
         var pagedResult = segmentationRepository.getSegmentations(
                 filterKeyword,
