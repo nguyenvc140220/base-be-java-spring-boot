@@ -16,7 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.text.DateFormat;
 import java.text.Normalizer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Objects;
 
 
 @RestController
@@ -27,20 +31,25 @@ public class ImportContactsController {
     @Value("${file.upload}")
     private String filePath;
 
+    private final DateFormat df = new SimpleDateFormat("yyMMddHHmmssS");
+
     private final ApplicationEventPublisher publisher;
 
 
     @PostMapping({"/import"})
-    @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
     @RequestMapping(method = RequestMethod.POST, consumes = {"multipart/form-data"}, value = "/import")
     public BaseResponse<ImportFile> ImportContacts(@RequestParam("file") MultipartFile file) {
         try {
-            String fileName = file.getOriginalFilename().replaceAll("\\s+", "_");
+            var fileName = Objects.requireNonNull(file.getOriginalFilename()).replaceAll("\\s+", "_");
             fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD);
-            fileName = System.currentTimeMillis() + fileName.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
-            String fileLocation = Paths.get(filePath, "uploads", "import", "contacts", fileName).toString();
+            fileName = String.format(
+                    "%s__%s",
+                    df.format(new Date()),
+                    fileName.replaceAll("\\p{InCombiningDiacriticalMarks}", "")
+            );
+            var fileLocation = Paths.get(filePath, "uploads", "import", "contacts", fileName).toString();
             file.transferTo(new File(fileLocation));
-            SaveContactsFileCommand cmd = new SaveContactsFileCommand();
+            var cmd = new SaveContactsFileCommand();
             cmd.setFilePath(Paths.get("uploads", "import", "contacts", fileName).toString());
             cmd.setFileName(fileName);
             var contactFile = bus.execute(cmd);
@@ -53,7 +62,6 @@ public class ImportContactsController {
         }
     }
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
     @PostMapping({"/add-header-mapping"})
     public BaseResponse<Boolean> AddHeaderMapping(@Valid @RequestBody AddHeaderMappingCommand cmd) {
         System.out.println(bus.execute(cmd));
