@@ -23,7 +23,7 @@ public class SegmentationFilter extends UUIDFullAuditedEntityImpl {
     @Column(name = "filters", length = 4080)
     private String filters;
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "segmentationFilters")
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "filters")
     private List<Segmentation> segmentations = new ArrayList<>();
 
     @Builder

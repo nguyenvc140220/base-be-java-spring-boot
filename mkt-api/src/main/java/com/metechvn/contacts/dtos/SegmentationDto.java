@@ -54,10 +54,10 @@ public class SegmentationDto extends SegmentationListDto {
 
         if (!(e instanceof Segmentation seg)) return;
 
-        if (seg.getSegmentationFilters() == null || seg.getSegmentationFilters().isEmpty()) return;
+        if (seg.getFilters() == null || seg.getFilters().isEmpty()) return;
 
         var om = new ObjectMapper();
-        for (var filter : seg.getSegmentationFilters()) {
+        for (var filter : seg.getFilters()) {
             if (StringUtils.isEmpty(filter.getFilters())) continue;
 
             try {

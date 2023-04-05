@@ -21,13 +21,13 @@ public class Segmentation extends UUIDFullAuditedEntityImpl {
     @Column(name = "num_of_contacts", columnDefinition = "int default 0")
     private int numOfContacts;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "join_segmentation_filter",
             joinColumns = @JoinColumn(name = "segmentation_id"),
             inverseJoinColumns = @JoinColumn(name = "segmentation_filter_id")
     )
-    private List<SegmentationFilter> segmentationFilters = new ArrayList<>();
+    private List<SegmentationFilter> filters = new ArrayList<>();
 
     public Segmentation() {
         super();
@@ -43,7 +43,7 @@ public class Segmentation extends UUIDFullAuditedEntityImpl {
     public Segmentation filter(SegmentationFilter... filters) {
         if (filters.length == 0) return this;
 
-        this.segmentationFilters.addAll(List.of(filters));
+        this.filters.addAll(List.of(filters));
 
         return this;
     }

@@ -3,12 +3,15 @@ package com.metechvn.contacts.controllers;
 import com.metechvn.common.BaseResponse;
 import com.metechvn.common.PageResponse;
 import com.metechvn.contacts.commands.CreateSegmentationCommand;
+import com.metechvn.contacts.commands.DeleteSegmentationCommand;
 import com.metechvn.contacts.dtos.SegmentationListDto;
 import com.metechvn.contacts.queries.SegmentationListQuery;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.Bus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,4 +49,10 @@ public class SegmentationController {
 
         return BaseResponse.onOk(response);
     }
+
+    @DeleteMapping("")
+    public BaseResponse<Boolean> deleteSegmentation(@RequestParam("id") UUID id) {
+        return BaseResponse.onOk(bus.execute(new DeleteSegmentationCommand(id)));
+    }
+
 }

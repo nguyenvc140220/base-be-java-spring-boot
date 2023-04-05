@@ -38,7 +38,7 @@ public class CreateSegmentationHandler implements RequestHandler<Segmentation, C
         if (filters.isEmpty())
             throw new BusinessException(String.format("Cannot get filter(s) for segmentation %s", cmd.getName()));
 
-        segmentation.setSegmentationFilters(filters);
+        segmentation.setFilters(filters);
 
         return segmentationRepository.save(segmentation);
     }
