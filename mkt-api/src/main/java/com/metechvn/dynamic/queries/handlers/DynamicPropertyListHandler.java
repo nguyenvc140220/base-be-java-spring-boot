@@ -12,10 +12,12 @@ import luongdev.cqrs.RequestHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 
 @Component
+@Transactional
 @RequiredArgsConstructor
 public class DynamicPropertyListHandler
         implements RequestHandler<PageResponse<DynamicProperty>, DynamicPropertyListQuery> {
