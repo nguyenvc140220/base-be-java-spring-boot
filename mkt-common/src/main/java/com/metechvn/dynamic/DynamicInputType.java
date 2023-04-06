@@ -12,6 +12,7 @@ public enum DynamicInputType {
     TIME_PICKER,
     DATETIME_PICKER,
     EMAIL,
-    PHONE_NUMBER
+    PHONE_NUMBER,
+    AUTO_GEN
 
 }

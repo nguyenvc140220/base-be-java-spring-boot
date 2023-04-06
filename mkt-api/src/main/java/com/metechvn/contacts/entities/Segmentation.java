@@ -47,4 +47,12 @@ public class Segmentation extends UUIDFullAuditedEntityImpl {
 
         return this;
     }
+
+    public Segmentation incContacts(int numOfContacts) {
+        if (numOfContacts <= 0) return this;
+
+        this.numOfContacts += numOfContacts;
+
+        return this;
+    }
 }

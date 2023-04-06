@@ -2,6 +2,8 @@ package com.metechvn.dynamic.consumers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.metechvn.dynamic.etos.ImportBatchProcessEto;
+import com.metechvn.dynamic.events.BatchImportedEvent;
 import com.metechvn.resource.repositories.ImportFileRepository;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -35,6 +38,7 @@ public class ImportBatchConsumer {
     private final IDynamicTypeValidator dynamicTypeValidator;
     private final DynamicEntityTypeRepository entityTypeRepository;
     private final ImportFileRepository importFileRepository;
+    private final ApplicationEventPublisher publisher;
     private final EntityManagerFactory emf;
 
     @KafkaListener(
@@ -68,6 +72,15 @@ public class ImportBatchConsumer {
             importFile.getImportStatus().incSuccess(successRow);
 
             importFileRepository.save(importFile);
+
+            publisher.publishEvent(new BatchImportedEvent(
+                    ImportBatchProcessEto.builder()
+                            .fileName(importFile.getFileName())
+                            .errorRows(errorRows)
+                            .successRows(successRow)
+                            .totalRows(totalRows)
+                            .build()
+            ));
         } catch (Exception e) {
             log.error("Cannot update import status job {} file {}. Trace {}", jobId, fileName, e.getMessage());
         }
