@@ -28,14 +28,17 @@ public class UpdateEntityHandler implements RequestHandler<DynamicEntity, Update
     @Override
     public DynamicEntity handle(UpdateEntityCommand cmd) {
         var typeIncludeProps = dynamicEntityTypeRepository.findIncludeRelationsByCode(cmd.getCode());
-        var entity = dynamicEntityRepository.findById(cmd.getIdEntity());
-        if (typeIncludeProps == null || entity == null)
-            throw new BusinessException(String.format("Cannot find object named '%s' or entityID '$s'", cmd.getCode(), cmd.getIdEntity()));
+        var currentEntityOptional = dynamicEntityRepository.findById(cmd.getIdEntity());
+        if (typeIncludeProps == null || currentEntityOptional.isEmpty())
+            throw new BusinessException(String.format("Cannot find object named '%s' or entityID '%s'", cmd.getCode(), cmd.getIdEntity()));
 
-        var entityGet = new DynamicEntity();
-        entityGet.setEntityType(typeIncludeProps);
-        entityGet.setId(cmd.getIdEntity());
-        entityGet.setTenant(currentTenantProvider.getTenant());
+        var currentEntity = currentEntityOptional.get();
+
+        var updatedEntity = new DynamicEntity();
+        updatedEntity.setEntityType(currentEntity.getEntityType());
+        updatedEntity.setId(currentEntity.getId());
+        updatedEntity.setTenant(currentEntity.getTenant());
+        updatedEntity.setProperties(currentEntity.getProperties());
 
         var validators = typeIncludeProps.getProperties().entrySet()
                 .stream()
@@ -56,9 +59,9 @@ public class UpdateEntityHandler implements RequestHandler<DynamicEntity, Update
                 this.validator.test(validator);
             }
 
-            entityGet.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
+            updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
         }
 
-        return dynamicEntityRepository.save(entityGet);
+        return dynamicEntityRepository.save(updatedEntity);
     }
 }
