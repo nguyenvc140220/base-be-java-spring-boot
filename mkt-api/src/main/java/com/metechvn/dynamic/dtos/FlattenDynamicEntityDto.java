@@ -1,15 +1,17 @@
 package com.metechvn.dynamic.dtos;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.metechvn.common.FullAuditDto;
+import com.metechvn.common.persistent.FullAuditedEntity;
+import com.metechvn.dynamic.entities.DynamicEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.*;
 
-public class FlattenDynamicEntityDto<T extends Serializable> implements Map<String, Object> {
-
-    private T id;
+public class FlattenDynamicEntityDto<T extends Serializable>
+        extends FullAuditDto<UUID, UUID> implements Map<String, Object> {
 
     @JsonIgnore
     private final Map<String, Object> properties = new HashMap<>();
@@ -17,9 +19,30 @@ public class FlattenDynamicEntityDto<T extends Serializable> implements Map<Stri
     private FlattenDynamicEntityDto() {
     }
 
-    public FlattenDynamicEntityDto(T id) {
-        this.id = id;
-        this.put("id", id);
+    public FlattenDynamicEntityDto(DynamicEntity entity) {
+        this.put("id", entity.getId());
+    }
+
+    @Override
+    protected <E extends FullAuditedEntity<UUID, UUID>> void apply(E e) {
+        super.apply(e);
+
+        var fields = this.getClass().getSuperclass().getDeclaredFields();
+        for (var field : fields) {
+            try {
+                field.setAccessible(true);
+                this.properties.put(field.getName(), field.get(this));
+            } catch (Exception ignored) {
+            }
+        }
+
+    }
+
+    public static FlattenDynamicEntityDto<UUID> of(DynamicEntity entity) {
+        var dto = new FlattenDynamicEntityDto<UUID>();
+        dto.apply(entity);
+
+        return dto;
     }
 
     @Override
@@ -84,9 +107,5 @@ public class FlattenDynamicEntityDto<T extends Serializable> implements Map<Stri
     @Override
     public Set<Entry<String, Object>> entrySet() {
         return this.properties.entrySet();
-    }
-
-    public T getId() {
-        return id;
     }
 }

@@ -68,7 +68,7 @@ public class DynamicEntitySavedEventListener
                     );
                 }
 
-                var flattenEntity = new FlattenDynamicEntityDto<>(entity.getId());
+                var flattenEntity = FlattenDynamicEntityDto.of(entity);
                 for (var prop : entity.getProperties().values()) {
                     flattenEntity.put(prop.getCode(), prop.getEntityPropertyValue().getValue());
                 }
