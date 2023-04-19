@@ -33,8 +33,8 @@ public class DynamicPropertyController {
     }
 
     @DeleteMapping({""})
-    public BaseResponse<Boolean> deleteProperty(@Valid @RequestBody DeletePropertyCommand cmd) {
-        System.out.println(bus.execute(cmd));
+    public BaseResponse<Boolean> deleteProperty(@RequestParam("code") String code) {
+        System.out.println(bus.execute(new DeletePropertyCommand(code)));
         return BaseResponse.onOk(true);
     }
 
