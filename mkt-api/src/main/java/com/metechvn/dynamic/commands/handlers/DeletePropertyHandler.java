@@ -28,7 +28,7 @@ public class DeletePropertyHandler implements RequestHandler<DynamicProperty, De
             existing.setDeleted(true);
             dynamicPropertyRepository.save(existing);
         } else {
-            throw new BusinessException("Không thể xóa trường động đã được gán giá trị");
+            throw new BusinessException("Không thể xóa trường thông tin đã tồn tại dữ liệu");
         }
 
         return existing;
