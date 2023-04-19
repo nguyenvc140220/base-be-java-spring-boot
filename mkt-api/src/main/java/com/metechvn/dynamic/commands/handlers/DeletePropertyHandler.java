@@ -25,8 +25,7 @@ public class DeletePropertyHandler implements RequestHandler<DynamicProperty, De
             throw new BusinessException(String.format("Mã %s không tồn tại", cmd.getCode()));
         var countValue = dynamicPropertyRepository.countValueById(existing.getId());
         if (countValue == 0) {
-            existing.setDeleted(true);
-            dynamicPropertyRepository.save(existing);
+            dynamicPropertyRepository.delete(existing);
         } else {
             throw new BusinessException("Không thể xóa trường thông tin đã tồn tại dữ liệu");
         }
