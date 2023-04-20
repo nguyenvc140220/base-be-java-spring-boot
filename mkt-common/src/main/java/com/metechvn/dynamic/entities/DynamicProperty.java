@@ -1,10 +1,13 @@
 package com.metechvn.dynamic.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.metechvn.common.persistent.UUIDFullAuditedEntityImpl;
 import com.metechvn.dynamic.DataType;
 import com.metechvn.dynamic.DynamicInputType;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -49,4 +52,8 @@ public class DynamicProperty extends UUIDFullAuditedEntityImpl {
 
     @Column(name = "description")
     private String description;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "property", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<DynamicEntityTypeProperty> dynamicEntityTypeProperties;
 }
