@@ -40,4 +40,6 @@ public class UpdatePropertyCommand implements Request<DynamicProperty> {
 
     @Builder.Default
     private boolean updatable = true;
+
+    private Boolean editable;
 }
