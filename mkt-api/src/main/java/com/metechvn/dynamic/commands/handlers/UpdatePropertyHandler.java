@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class UpdatePropertyHandler implements RequestHandler<DynamicProperty, Up
         var existing = dynamicPropertyRepository.findByCode(cmd.getCode());
         if (existing == null)
             throw new BusinessException(String.format("Mã %s không tồn tại", cmd.getCode()));
-        if(!cmd.getDisplayName().isEmpty())
+        if(StringUtils.hasText(cmd.getDisplayName()))
             existing.setDisplayName(cmd.getDisplayName());
         if(cmd.getDataType() != null)
             existing.setDataType(cmd.getDataType());
