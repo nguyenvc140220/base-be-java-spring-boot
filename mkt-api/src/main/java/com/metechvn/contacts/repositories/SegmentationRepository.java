@@ -17,7 +17,12 @@ public interface SegmentationRepository extends JpaRepository<Segmentation, UUID
     @Query("select seg from Segmentation seg join fetch seg.filters where seg.id = ?1")
     Segmentation findIncludeFiltersById(UUID id);
 
-    @Query("from Segmentation s where ?1 is null or lower(s.name) like ?1")
+    @Query(value = "select seg from Segmentation seg " +
+                    "join fetch seg.filters" +
+                    " where ?1 is null or lower(seg.name) like ?1",
+            countQuery = "select count(seg) from Segmentation seg" +
+                    " where ?1 is null or lower(seg.name) like ?1"
+    )
     Page<Segmentation> getSegmentations(String keyword, Pageable pageable);
 
 }

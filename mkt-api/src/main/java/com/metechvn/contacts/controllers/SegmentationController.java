@@ -2,6 +2,7 @@ package com.metechvn.contacts.controllers;
 
 import com.metechvn.common.BaseResponse;
 import com.metechvn.common.PageResponse;
+import com.metechvn.contacts.commands.AddHeaderMappingCommand;
 import com.metechvn.contacts.commands.CreateSegmentationCommand;
 import com.metechvn.contacts.commands.DeleteSegmentationCommand;
 import com.metechvn.contacts.dtos.SegmentationListDto;
