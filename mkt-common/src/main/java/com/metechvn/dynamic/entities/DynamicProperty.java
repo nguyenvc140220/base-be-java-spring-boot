@@ -56,9 +56,6 @@ public class DynamicProperty extends UUIDFullAuditedEntityImpl {
     @Column(name = "removable")
     private Boolean removable;
 
-    @Column(name = "hidden")
-    private Boolean hidden;
-
     @Column(name = "description")
     private String description;
 
