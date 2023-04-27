@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.RequestHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,8 @@ public class DynamicPropertyListHandler
     private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
     private final DynamicEntityTypePropertyRepository dynamicEntityTypePropertyRepository;
 
+    private final Sort DEFAULT_SORT = Sort.by("creationTime");
+
     @Override
     public PageResponse<DynamicProperty> handle(DynamicPropertyListQuery query) {
         if (StringUtils.isEmpty(query.getEntityTypeCode())) return filterWithoutEntityType(query);
@@ -36,7 +39,7 @@ public class DynamicPropertyListHandler
     private PageResponse<DynamicProperty> filterWithEntityType(DynamicPropertyListQuery query) {
         var filterKeyword = StringUtils.isEmpty(query.getKeyword())
                 ? null
-                : "%" + query.getKeyword() + "%s";
+                : query.getKeyword().trim().toLowerCase();
 
         var type = dynamicEntityTypeRepository.findByCode(query.getEntityTypeCode());
         if (type == null) {
@@ -44,9 +47,9 @@ public class DynamicPropertyListHandler
         }
 
         var pagedResult = dynamicEntityTypePropertyRepository.findBy(
-                type,
+                type.getId(),
                 filterKeyword,
-                PageRequest.of(query.getPageNumber() - 1, query.getPageSize())
+                PageRequest.of(query.getPageNumber() - 1, query.getPageSize(), DEFAULT_SORT)
         );
 
         return new PageResponse<>(
@@ -61,10 +64,12 @@ public class DynamicPropertyListHandler
     private PageResponse<DynamicProperty> filterWithoutEntityType(DynamicPropertyListQuery query) {
         var filterKeyword = StringUtils.isEmpty(query.getKeyword())
                 ? null
-                : "%" + query.getKeyword() + "%s";
+                : query.getKeyword().trim().toLowerCase();
 
-        var pagedResult = dynamicPropertyRepository
-                .findByKeyword(filterKeyword, PageRequest.of(query.getPageNumber() - 1, query.getPageSize()));
+        var pagedResult = dynamicPropertyRepository.findByKeyword(
+                filterKeyword,
+                PageRequest.of(query.getPageNumber() - 1, query.getPageSize(), DEFAULT_SORT)
+        );
 
         return new PageResponse<>(
                 pagedResult.toList(),
