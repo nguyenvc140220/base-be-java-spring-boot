@@ -1,0 +1,1 @@
+alter table "dynamic_property" add column configurable bool default true;

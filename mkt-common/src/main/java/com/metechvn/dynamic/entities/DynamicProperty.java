@@ -47,6 +47,9 @@ public class DynamicProperty extends UUIDFullAuditedEntityImpl {
     @Column(name = "editable")
     private Boolean editable;
 
+    @Column(name = "configurable")
+    private Boolean configurable;
+
     @Column(name = "removable")
     private Boolean removable;
 
