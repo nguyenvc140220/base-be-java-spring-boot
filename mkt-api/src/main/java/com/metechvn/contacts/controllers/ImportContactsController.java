@@ -1,6 +1,7 @@
 package com.metechvn.contacts.controllers;
 
 import com.metechvn.common.BaseResponse;
+import com.metechvn.common.excel.ExcelUtil;
 import com.metechvn.contacts.commands.AddHeaderMappingCommand;
 import com.metechvn.contacts.commands.SaveContactsFileCommand;
 import com.metechvn.contacts.events.ContactUploadEvent;
@@ -47,6 +48,10 @@ public class ImportContactsController {
                     df.format(new Date()),
                     fileName.replaceAll("\\p{InCombiningDiacriticalMarks}", "")
             );
+            File theDir = new File( Paths.get(filePath, "uploads", "import", "contacts").toString());
+            if (!theDir.exists()){
+                theDir.mkdirs();
+            }
             var fileLocation = Paths.get(filePath, "uploads", "import", "contacts", fileName).toString();
             file.transferTo(new File(fileLocation));
             var cmd = new SaveContactsFileCommand();
@@ -67,4 +72,9 @@ public class ImportContactsController {
         System.out.println(bus.execute(cmd));
         return BaseResponse.onOk(true);
     }
+    @GetMapping({"/get-example-file-import"})
+    public BaseResponse<Boolean> GetExampleFileImport(@Valid @RequestBody AddHeaderMappingCommand cmd) {
+        return BaseResponse.onOk(true);
+    }
+
 }
