@@ -40,6 +40,7 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
             DataType dataType,
             DynamicInputType inputType,
             Boolean removable,
+            Boolean visible,
             Boolean editable,
             Boolean configurable) {
         super(id, creationTime, createdBy, lastModificationTime, lastModificationBy, deletedTime, deletedBy);
@@ -48,6 +49,7 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
         this.validators = this.tryParseValidators(validators);
         this.removable = removable;
         this.editable = editable;
+        this.visible = visible;
         this.configurable = configurable;
         this.defaultValue = defaultValue;
         this.hintText = hintText;
@@ -71,6 +73,7 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
 
         this.code = p.getCode();
         this.displayName = p.getDisplayName();
+        this.visible = p.getVisible();
         this.editable = p.getEditable();
         this.removable = p.getRemovable();
         this.configurable = p.getConfigurable();
@@ -98,6 +101,7 @@ public class PropertyListDto extends FullAuditDto<UUID, UUID> {
     private String dataType;
     private String inputType;
     private Boolean removable;
+    private Boolean visible;
     private Boolean editable;
     private Boolean configurable;
     private List<DynamicTypeValidator> validators;
