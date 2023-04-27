@@ -12,7 +12,8 @@ import java.util.UUID;
 public interface DynamicEntityTypePropertyRepository extends JpaRepository<DynamicEntityTypeProperty, UUID> {
 
     @Query(value = "from DynamicEntityTypeProperty tp join fetch tp.property p " +
-            " where tp.entityType.id = :typeId and (:keyword is null or lower(p.displayName) like %:keyword% or lower(p.code) like %:keyword%)",
+            " where tp.entityType.id = :typeId and (:keyword is null or lower(p.displayName) like %:keyword% or lower(p.code) like %:keyword%)" +
+            " order by p.lastModificationTime desc nulls last",
             countQuery = "select count(tp) from DynamicEntityTypeProperty tp " +
                     " where tp.entityType.id = :typeId " +
                     "   and (:keyword is null or (tp.property is not null and (lower(tp.property.displayName) like %:keyword% or lower(tp.property.code) like %:keyword%)))")
