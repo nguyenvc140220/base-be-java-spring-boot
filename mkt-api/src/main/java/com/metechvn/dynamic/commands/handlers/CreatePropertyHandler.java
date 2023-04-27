@@ -32,6 +32,13 @@ public class CreatePropertyHandler implements RequestHandler<DynamicProperty, Cr
                 .displayName(cmd.getDisplayName())
                 .dataType(cmd.getDataType())
                 .inputType(cmd.getInputType())
+                .validators(cmd.getValidators())
+                .defaultValue(cmd.getDefaultValue())
+                .hintText(cmd.getHintText())
+                .tooltip(cmd.getTooltip())
+                .configurable(cmd.getConfigurationable())
+                .editable(cmd.getEditable())
+                .removable(true)
                 .build();
         dynamicEntityType.setTenant(currentTenantProvider.getTenant());
         return dynamicPropertyRepository.save(dynamicEntityType);
