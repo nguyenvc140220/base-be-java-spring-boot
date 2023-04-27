@@ -31,8 +31,8 @@ public class UpdatePropertyHandler implements RequestHandler<DynamicProperty, Up
             existing.setDataType(cmd.getDataType());
         if(cmd.getInputType() != null)
             existing.setInputType(cmd.getInputType());
-        if (cmd.getEditable() != null) {
-            existing.setEditable(cmd.getEditable());
+        if (cmd.getVisible() != null) {
+            existing.setVisible(cmd.getVisible());
         }
         return dynamicPropertyRepository.save(existing);
     }
