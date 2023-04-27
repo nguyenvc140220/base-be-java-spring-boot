@@ -44,6 +44,9 @@ public class DynamicProperty extends UUIDFullAuditedEntityImpl {
     @Column(name = "default_value", length = 4080)
     private String defaultValue;
 
+    @Column(name = "visible")
+    private Boolean visible;
+
     @Column(name = "editable")
     private Boolean editable;
 
