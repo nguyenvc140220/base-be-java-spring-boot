@@ -3,6 +3,7 @@ package com.metechvn.validators.testers.impl;
 
 import com.metechvn.validators.exceptions.DynamicTypeValidatorException;
 import com.metechvn.validators.testers.ITester;
+import org.springframework.util.StringUtils;
 
 public class LongNegativeTester implements ITester {
     /**
@@ -14,6 +15,8 @@ public class LongNegativeTester implements ITester {
      */
     @Override
     public boolean test(String validatorValue, String testValue) throws DynamicTypeValidatorException {
+        if (!StringUtils.hasText(testValue)) return true;
+
         if ("1".equals(validatorValue)) {
             try {
                 long testValueLong = Long.parseLong(testValue);
