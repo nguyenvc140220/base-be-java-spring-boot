@@ -3,6 +3,7 @@ package com.metechvn.validators.testers.impl;
 
 import com.metechvn.validators.exceptions.DynamicTypeValidatorException;
 import com.metechvn.validators.testers.ITester;
+import org.springframework.util.StringUtils;
 
 public class LongMaxTester implements ITester {
     /**
@@ -15,6 +16,8 @@ public class LongMaxTester implements ITester {
      */
     @Override
     public boolean test(String validatorValue, String testValue) throws DynamicTypeValidatorException {
+        if (!StringUtils.hasText(testValue)) return true;
+
         try {
             long validatorLong = Long.parseLong(validatorValue);
             long testLong = Long.parseLong(testValue);
