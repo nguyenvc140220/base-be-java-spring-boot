@@ -33,7 +33,8 @@ public class SegmentationListDto extends FullAuditDto<UUID, UUID> {
             Long deletedTime,
             UUID deletedBy,
             String name,
-            int numOfContacts) {
+            int numOfContacts,
+            List<Expression> filters) {
         super(id, creationTime, createdBy, lastModificationTime, lastModificationBy, deletedTime, deletedBy);
         this.name = name;
         this.numOfContacts = numOfContacts;
@@ -61,8 +62,8 @@ public class SegmentationListDto extends FullAuditDto<UUID, UUID> {
             try {
                 var exp = om.readValue(filter.getFilters(), Filter.class);
                 this.filters.add(exp);
-            } catch (JsonProcessingException ignored) {
-                System.out.println(ignored);
+            } catch (JsonProcessingException ex) {
+                System.out.println(ex.getMessage());
             }
         }
     }
