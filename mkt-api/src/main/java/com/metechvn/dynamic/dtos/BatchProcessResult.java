@@ -42,4 +42,12 @@ public class BatchProcessResult {
 
         return this;
     }
+
+    public int success() {
+        return this.successRows.size();
+    }
+
+    public int error() {
+        return this.errorRows.size();
+    }
 }

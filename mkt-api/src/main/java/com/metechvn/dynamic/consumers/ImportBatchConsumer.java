@@ -2,31 +2,20 @@ package com.metechvn.dynamic.consumers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.etos.ImportBatchProcessEto;
 import com.metechvn.dynamic.events.BatchImportedEvent;
-import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
+import com.metechvn.dynamic.processors.DynamicEntityBatchProcessor;
 import com.metechvn.resource.repositories.ImportFileRepository;
-import com.metechvn.validators.IDynamicTypeValidator;
-import com.metechvn.validators.dtos.DynamicTypeValidator;
-import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
-import com.metechvn.validators.exceptions.DynamicTypeValidatorException;
-import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -34,11 +23,9 @@ import java.util.stream.Collectors;
 public class ImportBatchConsumer {
 
     private final ObjectMapper objectMapper;
-    private final IDynamicTypeValidator dynamicTypeValidator;
-    private final DynamicEntityTypeRepository entityTypeRepository;
-    private final ImportFileRepository importFileRepository;
     private final ApplicationEventPublisher publisher;
-    private final EntityManagerFactory emf;
+    private final DynamicEntityBatchProcessor processor;
+    private final ImportFileRepository importFileRepository;
 
     @KafkaListener(
             topics = "MKT.JOB.ImportExcelBatch",
@@ -88,75 +75,22 @@ public class ImportBatchConsumer {
             var tenant = (String) batchData.get("tenant");
             var jobId = (String) batchData.get("jobId");
             var fileName = (String) batchData.get("fileName");
+            var entityCode = (String) batchData.get("entityType");
 
             var totalRows = 0;
             if (batchData.get("totalRows") instanceof Integer rows) totalRows = rows;
 
-            var entityType = entityTypeRepository.findIncludeRelationsByCode((String) batchData.get("entityType"));
-            if (entityType == null) {
-                return;
-            }
-
-            var batches = objectMapper.convertValue(batchData.get("batches"), new TypeReference<List<Map<String, Object>>>() {
-            });
-
-            var sessionFactory = emf.unwrap(SessionFactory.class);
-            try (var session = sessionFactory.openSession()) {
-                Transaction transaction;
-                try {
-                    transaction = session.beginTransaction();
-                } catch (Exception e) {
-                    transaction = session.getTransaction();
-                }
-
-                var validators = entityType.getProperties().entrySet()
-                        .stream()
-                        .filter(e -> StringUtils.hasText(e.getValue().getProperty().getValidators()))
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                e -> DynamicTypeValidator.fromJson(e.getValue().getProperty().getValidators())
-                        ));
-
-                var exceptionRows = new ArrayList<Map<String, Object>>();
-                var successRows = 0;
-                for (var row : batches) {
-                    var entity = new DynamicEntity();
-                    entity.setEntityType(entityType);
-                    entity.setTenant(tenant);
-
-                    var validationResult = true;
-                    for (var entry : row.entrySet()) {
-                        if (!entityType.exists(entry.getKey())) continue;
-
-                        try {
-                            dynamicTypeValidator.test(new DynamicTypeValidatorDto(
-                                    entry.getKey(),
-                                    entry.getValue(),
-                                    validators.get(entry.getKey())
-                            ));
-                        } catch (DynamicTypeValidatorException e) {
-                            validationResult = false;
-                            continue;
-                        }
-
-                        entity.set(entityType.getProperty(entry.getKey()), entry.getValue());
+            var batches = objectMapper.convertValue(
+                    batchData.get("batches"),
+                    new TypeReference<List<Map<String, Object>>>() {
                     }
+            );
 
-                    if (!validationResult) {
-                        exceptionRows.add(row);
-                        continue;
-                    }
+            var result = processor.process(jobId, tenant, entityCode, batches);
 
-                    session.persist(entity);
-                    successRows++;
-                }
+            tryToUpdateImportStatus(fileName, jobId, totalRows, result.success(), result.error());
 
-                transaction.commit();
-
-                tryToUpdateImportStatus(fileName, jobId, totalRows, successRows, exceptionRows.size());
-
-                // TODO: push error rows to kafka to send end-user
-            }
+            // TODO: push error rows to kafka to send end-user
         };
     }
 }

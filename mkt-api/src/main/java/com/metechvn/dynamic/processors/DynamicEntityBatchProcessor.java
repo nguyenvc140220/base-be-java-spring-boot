@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class BatchDynamicEntityProcessor {
+public class DynamicEntityBatchProcessor {
 
     private final IDynamicTypeValidator dynamicTypeValidator;
     private final DynamicEntityTypeRepository entityTypeRepository;
