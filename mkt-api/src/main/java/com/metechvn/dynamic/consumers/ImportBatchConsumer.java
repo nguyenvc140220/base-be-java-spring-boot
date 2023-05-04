@@ -2,11 +2,11 @@ package com.metechvn.dynamic.consumers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.etos.ImportBatchProcessEto;
 import com.metechvn.dynamic.events.BatchImportedEvent;
-import com.metechvn.resource.repositories.ImportFileRepository;
-import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
+import com.metechvn.resource.repositories.ImportFileRepository;
 import com.metechvn.validators.IDynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
@@ -19,7 +19,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -44,15 +43,13 @@ public class ImportBatchConsumer {
     @KafkaListener(
             topics = "MKT.JOB.ImportExcelBatch",
             groupId = "${spring.kafka.client-id}",
-            containerFactory = "objListenerAckManualContainerFactory")
-    public void onBatch(ConsumerRecord<Object, Map<String, Object>> cr, Acknowledgment ack) {
+            containerFactory = "objListenerContainerFactory")
+    public void onBatch(ConsumerRecord<Object, Map<String, Object>> cr) {
         if (cr.value() == null) {
             return;
         }
 
         this.importThread(cr.value()).run();
-
-        ack.acknowledge();
     }
 
     private void tryToUpdateImportStatus(String fileName, String jobId, int totalRows, int successRow, int errorRows) {
