@@ -125,19 +125,21 @@ public class ImportBatchConsumer {
                     entity.setTenant(tenant);
 
                     var validationResult = true;
-                    for (var entry : entityType.getProperties().entrySet()) {
-                        var value = row.get(entry.getKey());
+                    for (var entry : row.entrySet()) {
+                        if (!entityType.exists(entry.getKey())) continue;
 
                         try {
-                            dynamicTypeValidator.test(
-                                    new DynamicTypeValidatorDto(entry.getKey(), value, validators.get(entry.getKey()))
-                            );
+                            dynamicTypeValidator.test(new DynamicTypeValidatorDto(
+                                    entry.getKey(),
+                                    entry.getValue(),
+                                    validators.get(entry.getKey())
+                            ));
                         } catch (DynamicTypeValidatorException e) {
                             validationResult = false;
                             continue;
                         }
 
-                        entity.set(entry.getValue(), value);
+                        entity.set(entityType.getProperty(entry.getKey()), entry.getValue());
                     }
 
                     if (!validationResult) {
