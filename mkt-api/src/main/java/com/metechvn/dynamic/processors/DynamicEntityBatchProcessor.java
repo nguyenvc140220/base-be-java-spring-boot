@@ -1,6 +1,6 @@
 package com.metechvn.dynamic.processors;
 
-import com.metechvn.common.tenant.CurrentTenantProvider;
+import com.metechvn.common.CurrentTenantProvider;
 import com.metechvn.dynamic.dtos.BatchProcessResult;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
