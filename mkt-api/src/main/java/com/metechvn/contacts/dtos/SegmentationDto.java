@@ -42,7 +42,8 @@ public class SegmentationDto extends SegmentationListDto {
                 deletedTime,
                 deletedBy,
                 name,
-                numOfContacts
+                numOfContacts,
+                filters
         );
 
         if (filters != null && !filters.isEmpty()) this.filters.addAll(filters);
