@@ -57,13 +57,15 @@ public class UpdateEntityHandler implements RequestHandler<DynamicEntity, Update
             }
             var property = currentEntity.getProperties().get(entry.getKey());
             if (property != null){
+
                 var checkValue = currentEntity
                         .getProperties()
                         .get(entry.getKey())
                         .getEntityPropertyValue()
-                        .getValue()
-                        .equals(entry.getValue());
-                if (!checkValue){
+                        .getValue();
+                if (checkValue == null){
+                    updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
+                } else if (!checkValue.equals(entry.getValue())){
                     updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
                 }
             } else updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
