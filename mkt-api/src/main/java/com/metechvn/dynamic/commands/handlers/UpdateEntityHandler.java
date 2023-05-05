@@ -37,8 +37,7 @@ public class UpdateEntityHandler implements RequestHandler<DynamicEntity, Update
         var updatedEntity = new DynamicEntity();
         updatedEntity.setEntityType(currentEntity.getEntityType());
         updatedEntity.setId(currentEntity.getId());
-        updatedEntity.setTenant(currentEntity.getTenant());
-        updatedEntity.setProperties(currentEntity.getProperties());
+        updatedEntity.setTenant(currentEntity.getTenant());;
 
         var validators = typeIncludeProps.getProperties().entrySet()
                 .stream()
@@ -50,18 +49,25 @@ public class UpdateEntityHandler implements RequestHandler<DynamicEntity, Update
 
         for (var entry : cmd.getProperties().entrySet()) {
             if (!typeIncludeProps.exists(entry.getKey())) continue;
-
             var propValidators = validators.get(entry.getKey());
             if (propValidators != null && !propValidators.isEmpty()) {
                 var validator = new DynamicTypeValidatorDto(entry.getKey(), entry.getValue(), propValidators);
                 validator.setValidators(propValidators);
-
                 this.validator.test(validator);
             }
-
-            updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
+            var property = currentEntity.getProperties().get(entry.getKey());
+            if (property != null){
+                var checkValue = currentEntity
+                        .getProperties()
+                        .get(entry.getKey())
+                        .getEntityPropertyValue()
+                        .getValue()
+                        .equals(entry.getValue());
+                if (!checkValue){
+                    updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
+                }
+            } else updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
         }
-
         return dynamicEntityRepository.save(updatedEntity);
     }
 }
