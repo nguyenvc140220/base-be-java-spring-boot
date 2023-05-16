@@ -45,6 +45,7 @@ dependencies {
 
     // feign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.9'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

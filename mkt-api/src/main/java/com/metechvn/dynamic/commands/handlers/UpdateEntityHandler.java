@@ -1,12 +1,12 @@
 package com.metechvn.dynamic.commands.handlers;
 
 
-import com.metechvn.common.CurrentTenantProvider;
 import com.metechvn.dynamic.commands.UpdateEntityCommand;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
 import com.metechvn.exception.BusinessException;
+import com.metechvn.tenancy.TenantIdentifierResolver;
 import com.metechvn.validators.IDynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UpdateEntityHandler implements RequestHandler<DynamicEntity, UpdateEntityCommand> {
     private final IDynamicTypeValidator validator;
-    private final CurrentTenantProvider currentTenantProvider;
+    private final TenantIdentifierResolver currentTenantProvider;
     private final DynamicEntityRepository dynamicEntityRepository;
     private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
     @Override
