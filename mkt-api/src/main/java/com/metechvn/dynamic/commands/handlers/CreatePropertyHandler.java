@@ -1,10 +1,10 @@
 package com.metechvn.dynamic.commands.handlers;
 
-import com.metechvn.common.CurrentTenantProvider;
 import com.metechvn.dynamic.commands.CreatePropertyCommand;
 import com.metechvn.dynamic.entities.DynamicProperty;
 import com.metechvn.dynamic.repositories.DynamicPropertyRepository;
 import com.metechvn.exception.BusinessException;
+import com.metechvn.tenancy.TenantIdentifierResolver;
 import lombok.RequiredArgsConstructor;
 import luongdev.cqrs.RequestHandler;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CreatePropertyHandler implements RequestHandler<DynamicProperty, CreatePropertyCommand> {
 
-    private final CurrentTenantProvider currentTenantProvider;
+    private final TenantIdentifierResolver currentTenantProvider;
     private final DynamicPropertyRepository dynamicPropertyRepository;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -41,7 +41,7 @@ public class CreatePropertyHandler implements RequestHandler<DynamicProperty, Cr
                 .removable(true)
                 .visible(true)
                 .build();
-        dynamicEntityType.setTenant(currentTenantProvider.getTenant());
+        dynamicEntityType.setTenant(currentTenantProvider.resolveCurrentTenantIdentifier());
         return dynamicPropertyRepository.save(dynamicEntityType);
     }
 }

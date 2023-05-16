@@ -1,11 +1,11 @@
 package com.metechvn.dynamic.commands.handlers;
 
-import com.metechvn.common.CurrentTenantProvider;
 import com.metechvn.dynamic.commands.CreateEntityCommand;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
 import com.metechvn.exception.BusinessException;
+import com.metechvn.tenancy.TenantIdentifierResolver;
 import com.metechvn.validators.IDynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class CreateEntityHandler implements RequestHandler<DynamicEntity, CreateEntityCommand> {
 
     private final IDynamicTypeValidator validator;
-    private final CurrentTenantProvider currentTenantProvider;
+    private final TenantIdentifierResolver currentTenantProvider;
     private final DynamicEntityRepository dynamicEntityRepository;
     private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
 
@@ -35,7 +35,7 @@ public class CreateEntityHandler implements RequestHandler<DynamicEntity, Create
 
         var entity = new DynamicEntity();
         entity.setEntityType(typeIncludeProps);
-        entity.setTenant(currentTenantProvider.getTenant());
+        entity.setTenant(currentTenantProvider.resolveCurrentTenantIdentifier());
 
         var validators = typeIncludeProps.getProperties().entrySet()
                 .stream()
