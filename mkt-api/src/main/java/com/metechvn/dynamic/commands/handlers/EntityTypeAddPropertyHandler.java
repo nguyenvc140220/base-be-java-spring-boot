@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
 
 @Component
 @RequiredArgsConstructor
@@ -32,13 +30,13 @@ public class EntityTypeAddPropertyHandler implements RequestHandler<DynamicEntit
             throw new BusinessException(String.format("Mã %s không tồn tại", cmd.getEntityTypeCode()));
 
         ArrayList<DynamicProperty> properties = new ArrayList<>();
-        for(var code : cmd.getPropertyCodes()){
+        for (var code : cmd.getPropertyCodes()) {
             var property = dynamicPropertyRepository.findByCode(code);
-            if(property!=null){
+            if (property != null) {
                 properties.add(property);
             }
         }
-        if(properties.size() > 0){
+        if (properties.size() > 0) {
             DynamicProperty[] dynamicProperties = new DynamicProperty[properties.size()];
             existing.addProperties(properties.toArray(dynamicProperties));
         }
