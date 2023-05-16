@@ -3,6 +3,7 @@ package com.metechvn.dynamic.processors;
 import com.metechvn.dynamic.dtos.BatchProcessResult;
 import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
+import com.metechvn.tenancy.TenantIdentifierResolver;
 import com.metechvn.validators.IDynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
@@ -28,7 +29,7 @@ public class DynamicEntityBatchProcessor {
     private final IDynamicTypeValidator dynamicTypeValidator;
     private final DynamicEntityTypeRepository entityTypeRepository;
     private final EntityManagerFactory emf;
-//    private final CurrentTenantProvider currentTenantProvider;
+    private final TenantIdentifierResolver tenantIdentifierResolver;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -45,7 +46,7 @@ public class DynamicEntityBatchProcessor {
 
         var result = new BatchProcessResult(tenant, entityCode);
 
-/*        currentTenantProvider.setTenant(tenant);*/
+        tenantIdentifierResolver.setTenant(tenant);
         var entityType = entityTypeRepository.findIncludeRelationsByCode(entityCode);
         if (entityType == null) {
             log.error("{} Cannot find entity type with code {} in tenant {}", correlationId, entityCode, tenant);

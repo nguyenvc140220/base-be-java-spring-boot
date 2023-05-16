@@ -35,6 +35,7 @@ public class ImportBatchConsumer {
     private final ImportFileRepository importFileRepository;
     @Value("${spring.socket.server.address}")
     private String socketUri;
+
     @KafkaListener(
             topics = "MKT.JOB.ImportExcelBatch",
             groupId = "${spring.kafka.client-id}",
@@ -78,7 +79,7 @@ public class ImportBatchConsumer {
         }
     }
 
-    private void notificationImportDone(String fileName, String jobId, int totalRows, int successRow, int errorRows)  {
+    private void notificationImportDone(String fileName, String jobId, int totalRows, int successRow, int errorRows) {
         try {
             var importFile = importFileRepository.findIncludeStatusById(UUID.fromString(jobId));
             if (importFile == null || importFile.getImportStatus() == null) {
@@ -88,7 +89,7 @@ public class ImportBatchConsumer {
             HttpClient client = HttpClient.newHttpClient();
 
             URI uri = URI.create(socketUri + "/notification/import-done");
-            var req = new ImportDoneRequest(importFile.getFileName(),totalRows,successRow,errorRows);
+            var req = new ImportDoneRequest(importFile.getFileName(), totalRows, successRow, errorRows);
             ObjectMapper mapper = new ObjectMapper();
             String requestBody = mapper.writeValueAsString(req);
             HttpRequest request = HttpRequest.newBuilder()
@@ -99,10 +100,11 @@ public class ImportBatchConsumer {
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             log.info("Response Post by Socket {}", response);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Cannot notification import done with fileName {}. Trace {}", fileName, e.getMessage());
         }
     }
+
     private Runnable importThread(Map<String, Object> batchData) {
         return () -> {
             var tenant = (String) batchData.get("tenant");
@@ -122,7 +124,7 @@ public class ImportBatchConsumer {
             var result = processor.process(jobId, tenant, entityCode, batches);
 
             tryToUpdateImportStatus(fileName, jobId, totalRows, result.success(), result.error());
-            notificationImportDone(fileName,jobId,totalRows, result.success(),result.error());
+            notificationImportDone(fileName, jobId, totalRows, result.success(), result.error());
 
             // TODO: push error rows to kafka to send end-user
 

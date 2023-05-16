@@ -47,7 +47,7 @@ public class DynamicEntitySavedEventListener
             if (event.getSource() instanceof DynamicEntity de) entities.add(de);
             else if (event.getSource() instanceof List<?> deLst) {
                 entities.addAll(
-                        deLst.stream().filter(d -> d instanceof DynamicEntity).map(x -> (DynamicEntity) x).toList()
+                        deLst.stream().filter(DynamicEntity.class::isInstance).map(x -> (DynamicEntity) x).toList()
                 );
             }
 

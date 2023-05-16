@@ -22,7 +22,7 @@ public class Domain2TenantInterceptor implements HandlerInterceptor {
         if (DispatcherType.REQUEST.name().equals(req.getDispatcherType().name())) {
             var domainName = req.getHeader(Constants.DOMAIN_HEADER);
             if (StringUtils.isNotEmpty(domainName)) {
-                currentTenantProvider.setCurrentTenant(domainName.split("\\.")[0]);
+                currentTenantProvider.setTenant(domainName.split("\\.")[0]);
             }
         }
 

@@ -13,12 +13,12 @@ public class TenantIdentifierResolver implements CurrentTenantIdentifierResolver
 
     private String currentTenant = "default";
 
-    public void setCurrentTenant(String domain) {
+    public void setTenant(String domain) {
         currentTenant = domain;
     }
 
     public void defaultTenant() {
-        this.setCurrentTenant("default");
+        this.setTenant("default");
     }
 
     @Override

@@ -25,11 +25,11 @@ public class UpdatePropertyHandler implements RequestHandler<DynamicProperty, Up
         var existing = dynamicPropertyRepository.findByCode(cmd.getCode());
         if (existing == null)
             throw new BusinessException(String.format("Mã %s không tồn tại", cmd.getCode()));
-        if(StringUtils.hasText(cmd.getDisplayName()))
+        if (StringUtils.hasText(cmd.getDisplayName()))
             existing.setDisplayName(cmd.getDisplayName());
-        if(cmd.getDataType() != null)
+        if (cmd.getDataType() != null)
             existing.setDataType(cmd.getDataType());
-        if(cmd.getInputType() != null)
+        if (cmd.getInputType() != null)
             existing.setInputType(cmd.getInputType());
         if (cmd.getVisible() != null) {
             existing.setVisible(cmd.getVisible());
