@@ -22,7 +22,7 @@ public class Tenant {
         return String.format("%s/%s", url, dbName);
     }
 
-    public DataSource getDataSource(String key, String salt, String iv) {
+    public HikariDataSource getDataSource(String key, String salt, String iv) {
         var ds = new HikariDataSource();
         ds.setJdbcUrl(getJdbcUrl(dbConnection.getDatabase()));
         ds.setUsername(dbConnection.getUser());

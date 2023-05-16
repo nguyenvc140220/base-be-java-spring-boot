@@ -1,5 +1,6 @@
 package com.metechvn.tenancy;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,9 +30,9 @@ public class TenantConnectionProvider
             DataSource dataSource,
             TenancyHttpService tenancyHttpService,
             TenantIdentifierResolver tenantIdentifierResolver,
-            @Value("services.tenancy.crypto.key") String decryptKey,
-            @Value("services.tenancy.crypto.salt") String decryptSalt,
-            @Value("services.tenancy.crypto.iv") String decryptIV) {
+            @Value("${services.tenancy.crypto.key:Default#Tenant@123}") String decryptKey,
+            @Value("${services.tenancy.crypto.salt:hgt!16kl}") String decryptSalt,
+            @Value("${services.tenancy.crypto.iv:jkE49230Tf093b42}") String decryptIV) {
         this.dataSource = dataSource;
         this.tenancyHttpService = tenancyHttpService;
         this.tenantIdentifierResolver = tenantIdentifierResolver;
@@ -54,9 +55,12 @@ public class TenantConnectionProvider
         var tenantName = tenantIdentifierResolver.resolveCurrentTenantIdentifier();
         if (!this.dataSources.containsKey(tenantName)) {
             var tenant = tenancyHttpService.find(tenantName);
-            if (tenant == null) throw new RuntimeException("Cannot found tenant named " + tenantName);
+            if (tenant == null) throw new TenantNotFoundException(tenantName);
 
-            this.dataSources.put(tenantName, tenant.getDataSource(decryptKey, decryptSalt, decryptIV));
+            var ds = tenant.getDataSource(decryptKey, decryptSalt, decryptIV);
+            if (dataSource instanceof HikariDataSource hds) ds.setSchema(hds.getSchema());
+
+            this.dataSources.put(tenantName, ds);
         }
 
         return this.dataSources.get(tenantName);
