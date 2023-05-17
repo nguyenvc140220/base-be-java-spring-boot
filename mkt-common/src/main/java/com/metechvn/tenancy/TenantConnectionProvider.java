@@ -13,26 +13,41 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Component
 public class TenantConnectionProvider
         extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl implements HibernatePropertiesCustomizer {
 
     private final Map<String, DataSource> dataSources = new TreeMap<>();
-    private final DataSource dataSource;
-    private final TenancyHttpService tenancyHttpService;
-    private final TenantIdentifierResolver tenantIdentifierResolver;
+    private final transient DataSource dataSource;
+    private final transient TenancyHttpService tenancyHttpService;
+    private final transient TenantIdentifierResolver tenantIdentifierResolver;
 
     private final String decryptKey;
     private final String decryptSalt;
     private final String decryptIV;
 
+//    public TenantConnectionProvider(
+//            DataSource dataSource,
+//            TenancyHttpService tenancyHttpService,
+//            TenantIdentifierResolver tenantIdentifierResolver,
+//            @Value("${services.tenancy.crypto.key:Default#Tenant@123}") String decryptKey,
+//            @Value("${services.tenancy.crypto.salt:hgt!16kl}") String decryptSalt,
+//            @Value("${services.tenancy.crypto.iv:jkE49230Tf093b42}") String decryptIV) {
+//        this.dataSource = dataSource;
+//        this.tenancyHttpService = tenancyHttpService;
+//        this.tenantIdentifierResolver = tenantIdentifierResolver;
+//
+//        this.decryptKey = decryptKey;
+//        this.decryptSalt = decryptSalt;
+//        this.decryptIV = decryptIV;
+//    }
+
     public TenantConnectionProvider(
             DataSource dataSource,
             TenancyHttpService tenancyHttpService,
             TenantIdentifierResolver tenantIdentifierResolver,
-            @Value("${services.tenancy.crypto.key:Default#Tenant@123}") String decryptKey,
-            @Value("${services.tenancy.crypto.salt:hgt!16kl}") String decryptSalt,
-            @Value("${services.tenancy.crypto.iv:jkE49230Tf093b42}") String decryptIV) {
+            String decryptKey,
+            String decryptSalt,
+            String decryptIV) {
         this.dataSource = dataSource;
         this.tenancyHttpService = tenancyHttpService;
         this.tenantIdentifierResolver = tenantIdentifierResolver;
@@ -55,7 +70,7 @@ public class TenantConnectionProvider
         var tenantName = tenantIdentifierResolver.resolveCurrentTenantIdentifier();
         if (!this.dataSources.containsKey(tenantName)) {
             var tenant = tenancyHttpService.find(tenantName);
-            if (tenant == null) throw new TenantNotFoundException(tenantName);
+            if (tenant == null || !tenant.isValid()) throw new TenantNotFoundException(tenantName);
 
             var ds = tenant.getDataSource(decryptKey, decryptSalt, decryptIV);
             if (dataSource instanceof HikariDataSource hds) ds.setSchema(hds.getSchema());

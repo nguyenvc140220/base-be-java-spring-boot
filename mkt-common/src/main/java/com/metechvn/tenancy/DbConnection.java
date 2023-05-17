@@ -1,6 +1,7 @@
 package com.metechvn.tenancy;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 public class DbConnection {
@@ -11,4 +12,11 @@ public class DbConnection {
     private String password;
     private String database;
 
+    public boolean isValid() {
+        return port > 0
+                && StringUtils.isNotEmpty(host)
+                && StringUtils.isNotEmpty(user)
+                && StringUtils.isNotEmpty(password)
+                && StringUtils.isNotEmpty(database);
+    }
 }

@@ -5,7 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.sql.DataSource;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -14,6 +14,11 @@ public class Tenant {
     private UUID id;
     private String name;
     private DbConnection dbConnection;
+    private Map<String, Object> properties;
+
+    public boolean isValid() {
+        return StringUtils.isNotEmpty(name) && id != null && dbConnection != null && dbConnection.isValid();
+    }
 
     public String getJdbcUrl(String dbName) {
         var url = String.format("jdbc:postgresql://%s:%s", dbConnection.getHost(), dbConnection.getPort());
