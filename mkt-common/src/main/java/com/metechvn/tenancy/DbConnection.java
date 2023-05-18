@@ -9,6 +9,7 @@ public class DbConnection {
     private String host;
     private int port;
     private String user;
+    private String schema;
     private String password;
     private String database;
 

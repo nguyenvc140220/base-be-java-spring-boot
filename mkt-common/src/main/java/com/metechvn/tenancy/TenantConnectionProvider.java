@@ -1,11 +1,10 @@
 package com.metechvn.tenancy;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
-import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -25,21 +24,6 @@ public class TenantConnectionProvider
     private final String decryptSalt;
     private final String decryptIV;
 
-//    public TenantConnectionProvider(
-//            DataSource dataSource,
-//            TenancyHttpService tenancyHttpService,
-//            TenantIdentifierResolver tenantIdentifierResolver,
-//            @Value("${services.tenancy.crypto.key:Default#Tenant@123}") String decryptKey,
-//            @Value("${services.tenancy.crypto.salt:hgt!16kl}") String decryptSalt,
-//            @Value("${services.tenancy.crypto.iv:jkE49230Tf093b42}") String decryptIV) {
-//        this.dataSource = dataSource;
-//        this.tenancyHttpService = tenancyHttpService;
-//        this.tenantIdentifierResolver = tenantIdentifierResolver;
-//
-//        this.decryptKey = decryptKey;
-//        this.decryptSalt = decryptSalt;
-//        this.decryptIV = decryptIV;
-//    }
 
     public TenantConnectionProvider(
             DataSource dataSource,
@@ -73,7 +57,9 @@ public class TenantConnectionProvider
             if (tenant == null || !tenant.isValid()) throw new TenantNotFoundException(tenantName);
 
             var ds = tenant.getDataSource(decryptKey, decryptSalt, decryptIV);
-            if (dataSource instanceof HikariDataSource hds) ds.setSchema(hds.getSchema());
+            if (StringUtils.isNotEmpty(tenant.getDbConnection().getSchema())) {
+                ds.setSchema(tenant.getDbConnection().getSchema());
+            } else if (dataSource instanceof HikariDataSource hds) ds.setSchema(hds.getSchema());
 
             this.dataSources.put(tenantName, ds);
         }
