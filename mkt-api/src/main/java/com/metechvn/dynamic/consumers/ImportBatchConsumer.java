@@ -115,6 +115,9 @@ public class ImportBatchConsumer {
             var totalRows = 0;
             if (batchData.get("totalRows") instanceof Integer rows) totalRows = rows;
 
+            var readRows = 0;
+            if (batchData.get("readRows") instanceof Integer rows) readRows = rows;
+
             var batches = objectMapper.convertValue(
                     batchData.get("batches"),
                     new TypeReference<List<Map<String, Object>>>() {
@@ -124,8 +127,9 @@ public class ImportBatchConsumer {
             var result = processor.process(jobId, tenant, entityCode, batches);
 
             tryToUpdateImportStatus(fileName, jobId, totalRows, result.success(), result.error());
-            notificationImportDone(fileName, jobId, totalRows, result.success(), result.error());
-
+            if(readRows >= totalRows){
+                notificationImportDone(fileName, jobId, totalRows, result.success(), result.error());
+            }
             // TODO: push error rows to kafka to send end-user
 
         };
