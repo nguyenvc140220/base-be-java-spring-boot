@@ -6,7 +6,6 @@ import com.metechvn.dynamic.entities.DynamicEntity;
 import com.metechvn.dynamic.repositories.DynamicEntityRepository;
 import com.metechvn.dynamic.repositories.DynamicEntityTypeRepository;
 import com.metechvn.exception.BusinessException;
-import com.metechvn.tenancy.TenantIdentifierResolver;
 import com.metechvn.validators.IDynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidator;
 import com.metechvn.validators.dtos.DynamicTypeValidatorDto;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UpdateEntityHandler implements RequestHandler<DynamicEntity, UpdateEntityCommand> {
     private final IDynamicTypeValidator validator;
-    private final TenantIdentifierResolver currentTenantProvider;
     private final DynamicEntityRepository dynamicEntityRepository;
     private final DynamicEntityTypeRepository dynamicEntityTypeRepository;
     @Override
@@ -37,7 +35,7 @@ public class UpdateEntityHandler implements RequestHandler<DynamicEntity, Update
         var updatedEntity = new DynamicEntity();
         updatedEntity.setEntityType(currentEntity.getEntityType());
         updatedEntity.setId(currentEntity.getId());
-        updatedEntity.setTenant(currentEntity.getTenant());;
+        updatedEntity.setTenant(currentEntity.getTenant());
 
         var validators = typeIncludeProps.getProperties().entrySet()
                 .stream()
@@ -55,20 +53,7 @@ public class UpdateEntityHandler implements RequestHandler<DynamicEntity, Update
                 validator.setValidators(propValidators);
                 this.validator.test(validator);
             }
-            var property = currentEntity.getProperties().get(entry.getKey());
-            if (property != null){
-
-                var checkValue = currentEntity
-                        .getProperties()
-                        .get(entry.getKey())
-                        .getEntityPropertyValue()
-                        .getValue();
-                if (checkValue == null){
-                    updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
-                } else if (!checkValue.equals(entry.getValue())){
-                    updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
-                }
-            } else updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
+            updatedEntity.set(typeIncludeProps.getProperty(entry.getKey()), entry.getValue());
         }
         return dynamicEntityRepository.save(updatedEntity);
     }
